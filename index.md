@@ -64,17 +64,17 @@ You can put quite literally anything into a string (assuming infinite memory). T
 ```xml
 <?xml version="1.0"?>
 <catalog>
-   <book id="bk101">
-      <author>Shakespeare, William</author>
-      <title>As You Like It</title>
-      <genre>Comedy</genre>
-      <price>£4.95</price>
-      <publish_date>1599-02-20</publish_date>
-      <isbn>978-0141012278</isbn>
-      <description>William Shakespeare's exuberant comedy
-      As You Like It is his playful take on the Renaissance
-      tradition of pastoral romance</description>
-   </book>
+    <book id="bk101">
+        <author>Shakespeare, William</author>
+        <title>As You Like It</title>
+        <genre>Comedy</genre>
+        <price>£4.95</price>
+        <publish_date>1599-02-20</publish_date>
+        <isbn>978-0141012278</isbn>
+        <description>William Shakespeare's exuberant comedy
+        As You Like It is his playful take on the Renaissance
+        tradition of pastoral romance</description>
+    </book>
 </catalog>
 ```
 
@@ -356,3 +356,62 @@ public boolean authenticate(String username, String password) {
 This way, the database will handle the user-supplied input separately from the SQL itself, which means (assuming the database driver has been written well) any SQL in the user input will be treated as text, not code.
 
 A number of threats to security involve convincing a program to treat data as executable instructions. Most of the attacks on Microsoft and Oracle which mean you have to update Windows and Java every seventeen minutes buffer overflow attacks. Because arrays aren't really a thing in C, you can *overflow* the array by simply writing past the end of it; there are no checks to ensure user input fits inside the array. If you are familiar with the memory layout of the application, you can write enough that you overwrite machine instructions with your own, giving you complete control of the application execution simply by providing more text than was expected.
+
+### Spit it out
+
+Earlier, we pulled some data in from a CSV file. Now we're going to send out some HTML.
+
+We won't make the same mistake we made with the SQL. No concatenation, this time. We're going to use a templating library. Our template will look something like this:
+
+```html
+<section id="catalog">
+    <#list books as book>
+        <div class="book" id="${book.id}">
+            <h1><span class="title">${book.title}</span>,
+                by <span class="author">${book.author}</span></h1>
+            <p class="description">${book.description}</p>
+
+            <ol class="reviews">
+                <#list book.reviews as review>
+                    <li>${review.text} -- #{review.reviewerName}</li>
+                </#list>
+            </ol>
+        </div>
+    </#list>
+</section>
+```
+
+Easy. Sorted. Cushty.
+
+Except no. What if one of the reviews looks something like this?
+
+```html
+I thought this was one of Shakespeare's best plays.
+<script>
+document.location = 'http://install.malware.com/';
+</script>
+```
+
+Lovely. Everyone will be redirected to an evil website, and no one will read the other marvellous reviews. Sad faces all around.
+
+We could escape the text by using the `?html` post-processor (`${review.text?html}`), but then we'd have to do that for everything, and you know you'd forget one.
+
+How about we write code that really does separate the instructions from the text instead?
+
+```java
+section(id("catalog"),
+    many(books.map(book ->
+        div(className("book"), id(book.id()),
+            h1(
+                span(className("title"), book.title()),
+                ", by ",
+                span(className("author"), book.author())),
+            p(className("description"), book.description())),
+        ol(className("reviews"),
+            many(books.reviews().map(review ->
+                li(review.text(), " -- ", review.reviewerName())))))))
+```
+
+It's pretty much as easy to read, am I right? And it has the added bonus of no cross-site scripting (XSS) vulnerabilities.
+
+I should probably add that this HTML-building library doesn't actually exist. However, if you promise me you'll use it, I will build it for you.
