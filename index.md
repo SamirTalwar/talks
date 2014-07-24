@@ -288,3 +288,71 @@ public class CsvReader {
 The caller is now also responsible for closing the file, but hopefully we've made that clear in the method name. Now we can move our `CsvReader` to another package, or perhaps an entirely different module, and work on it separate from the business logic.
 
 CSV-reading, among many other things, is infrastructure-level code. It should not be intermingled with application-level concerns. Decoupling these two will make the real purpose of the application much clearer.
+
+### A perennial favourite
+
+Pop quiz: what's wrong with this code?
+
+```java
+public boolean authenticate(String username, String password) {
+    String encryptedPassword = encrypt(password);
+
+    Statement statement = connection.createStatement();
+    ResultSet resultSet = statement.executeQuery(
+        "SELECT COUNT(*) count FROM users" +
+        " WHERE username = '" + username + "'" +
+        "   AND password = '" + encryptedPassword + "'");
+
+    resultSet.next();
+    return resultSet.getInt("count") == 1;
+}
+```
+
+If you said that it's not using `String.format`, you get a demerit. Stay after class.
+
+I think most of you will know this one already. It's subject to an SQL injection attack. Sure, calling it with something like `authenticate("steve", "open-sesame")` is totally fine, but what about this?
+
+```java
+authenticate("hacker", "' OR '' = '");
+```
+
+The resulting SQL will look like this:
+
+```sql
+SELECT COUNT(*) count FROM users
+ WHERE username = 'hacker'
+   AND password = '' OR '' = ''
+```
+
+Boolean operator precedence plays a role here, so let's reformat and put the parentheses in:
+
+```sql
+SELECT COUNT(*) count FROM users
+ WHERE (username = 'hacker' AND password = '')
+    OR '' = ''
+```
+
+Yup. Turns out that password will get you into a lot of badly-written websites. And it's easy to test for. On the *really* broken ones, using `'` in your password will crash the website.
+
+The correct way to do things is to, of course, use parameterised SQL:
+
+```java
+public boolean authenticate(String username, String password) {
+    String encryptedPassword = encrypt(password);
+
+    Statement statement = connection.prepareStatement(
+        "SELECT COUNT(*) count FROM users" +
+        " WHERE username = ?"
+        "   AND password = ?");
+    statement.setString(1, username);
+    statement.setString(2, encryptedPassword);
+    ResultSet resultSet = statement.executeQuery();
+
+    resultSet.next();
+    return resultSet.getInt("count") == 1;
+}
+```
+
+This way, the database will handle the user-supplied input separately from the SQL itself, which means (assuming the database driver has been written well) any SQL in the user input will be treated as text, not code.
+
+A number of threats to security involve convincing a program to treat data as executable instructions. Most of the attacks on Microsoft and Oracle which mean you have to update Windows and Java every seventeen minutes buffer overflow attacks. Because arrays aren't really a thing in C, you can *overflow* the array by simply writing past the end of it; there are no checks to ensure user input fits inside the array. If you are familiar with the memory layout of the application, you can write enough that you overwrite machine instructions with your own, giving you complete control of the application execution simply by providing more text than was expected.
