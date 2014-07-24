@@ -165,6 +165,10 @@ a:visited { color: #a0a; }
 /*
 /*****************************************************************************/
 
+.twitter-tweet {
+    margin: 1em auto !important;
+}
+
 .line-numbers {
     padding-right: 1em;
 }

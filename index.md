@@ -8,7 +8,7 @@ layout: default
 
 ### Who are you?
 
-*TODO: INSERT EXPLANATORY TWEET*
+<blockquote class="twitter-tweet" lang="en"><p>I really have only myself to blame for my five hours of sleep, but I&#39;m still gonna blame the world.</p>&mdash; ow. (@SamirTalwar) <a href="https://twitter.com/SamirTalwar/statuses/462126458220343296">May 2, 2014</a></blockquote>
 
 ### What is the point of this talk?
 
