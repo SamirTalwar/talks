@@ -82,13 +82,21 @@ We often use strings to store arbitrary, human-written text, but it's even more 
 
 ### So what's the problem?
 
-It turns out strings themselves are very useful. Having the ability to move around arbitrary amounts of data encoded in a fashion anything can understand has served software developers very well. Unfortunately, there's one thing you can do with strings which undermines everything.
+It turns out strings themselves are very useful. Having the ability to move around arbitrary amounts of data encoded in a fashion anything can understand has served software developers very well. Unfortunately, there's a few things you can do with strings which undermine everything.
+
+The first:
 
 ```java
 a + b
 ```
 
-Yup, concatenation. That beast.
+Yup, concatenation. That beast. Now the second:
+
+```java
+c.split(";")
+```
+
+Oh, splitting. You devil, you.
 
 Hold your arguments for now. All will become clear.
 
@@ -184,3 +192,99 @@ public String serialize() {
 ```
 
 This is a clear example of how separating our concerns and focusing on one thing at a time can really improve our code quality. If we were worried about the performance of creating a second list, we could easily optimise the `join` method, and every caller would benefit for free.
+
+### Strings are complicated
+
+Often, our data isn't quite as structured as we'd like. You know when this happens when you receive a CSV file with instructions to pull the relevant bits out. Finding those relevant bits can sometimes be harder than you think.
+
+```java
+public class Toolboxen {
+    public List<Toolbox> readToolboxen(File file) {
+        try (Stream<String> lines = Files.lines(file)) {
+            return lines
+                .map(line -> asList(line.split(",")))
+                .map(fields -> new Toolbox(fields.get(0),
+                                           fields.get(2),
+                                           Integer.valueOf(fields.get(1))))
+                .filter(toolbox -> toolbox.hasSpanner())
+                .collect(toList());
+        }
+    }
+}
+```
+
+That's way nicer than the same behaviour in Java 7, but it's still got more than a few problems. First of all, it's common for text to have commas (`,`) in it, and it's common for CSV files to have a bit of free text. So what do we do when we have a comma? We put quotes around the entire text, of course.
+
+Suddenly this got a lot more complicated.
+
+```java
+public class Toolboxen {
+    private static final char SEPARATOR = ",";
+    private static final char QUOTE = "\"";
+
+    public List<Toolbox> readToolboxen(File file) {
+        try (Stream<String> lines = Files.lines(file)) {
+            return lines
+                .map(line -> splitLine(line))
+                .map(fields -> new Toolbox(fields.get(0),
+                                           fields.get(2),
+                                           Integer.valueOf(fields.get(1))))
+                .filter(toolbox -> toolbox.hasSpanner())
+                .collect(toList());
+        }
+    }
+
+    private static List<String> splitLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder currentField;
+        String rest = line.trim();
+        while (!rest.isEmpty()) {
+            boolean quoted = rest.charAt(0) == QUOTE;
+            boolean ended = false;
+            for (int i = 0; i < rest.length(); i++) {
+                char c = rest.charAt(i);
+                if (quoted && c == QUOTE) {
+                    ended = true;
+                } else if (ended && c == SEPARATOR) {
+                    break;
+                } else if (ended) {
+                    throw new IncorrectlyQuotedFieldException();
+                } else {
+                    currentField.append(c);
+                }
+            }
+
+            if (quoted && !ended) {
+                throw new IncorrectlyQuotedFieldException();
+            }
+
+            fields.add(currentField.toString());
+            rest = rest.substr(i + 1).trim();
+        }
+        return fields;
+    }
+}
+```
+
+UGH.
+
+Now, we're still missing a lot.
+
+  * You need to be able to escape the quote character, because sometimes you'll need it inside a string.
+  * Quoted fields can span multiple lines.
+  * Every row should contain the same number of comma-separated fields.
+
+But here's the real problem. There's tight coupling between reading the file and creating our `Toolbox` objects. We can remedy that by returning a stream and letting the caller construct the object:
+
+```java
+public class CsvReader {
+    public Stream<List<String>> openCsvFile(File csvFile) {
+        return Files.lines(csvFile)
+            .map(line -> splitLine(line));
+    }
+}
+```
+
+The caller is now also responsible for closing the file, but hopefully we've made that clear in the method name. Now we can move our `CsvReader` to another package, or perhaps an entirely different module, and work on it separate from the business logic.
+
+CSV-reading, among many other things, is infrastructure-level code. It should not be intermingled with application-level concerns. Decoupling these two will make the real purpose of the application much clearer.
