@@ -91,3 +91,96 @@ a + b
 Yup, concatenation. That beast.
 
 Hold your arguments for now. All will become clear.
+
+## Case Studies
+
+### Single Responsibility
+
+There's a piece of code everyone has written at least once. You've done it. I've done it. Your old computer science lecturer does it all the time.
+
+It looks like this:
+
+```java
+public String serialize() {
+    String output = "";
+    boolean first = true;
+    for (Whatnot thingamabob : values) {
+        if (first) {
+            first = false;
+        } else {
+            output += ", ";
+        }
+        output += String.valueOf(thingamabob);
+    }
+    return output;
+}
+```
+
+There's some serious problems with this. And I don't mean that it's not using a `StringBuilder`. It's unreadable. It doesn't tell you what it's doing or why it's doing it.
+
+This piece of code is really doing two things. First of all, it's converting everything into a string. Secondly, it's sticking them together with `", "` interspersed.
+
+Let's do that as two operations.
+
+```java
+private final String SEPARATOR = ", ";
+
+public String serialize() {
+    List<String> stringValues = new ArrayList<>();
+    for (Whatnot thingamabob : values) {
+        stringValues.add(thingamabob);
+    }
+
+    String output = "";
+    boolean first = true;
+    for (String value : stringValues) {
+        if (first) {
+            first = false;
+        } else {
+            output += SEPARATOR;
+        }
+        output += value;
+    }
+    return output;
+}
+```
+
+Not much better, is it? But now we can break it apart:
+
+```java
+public String serialize() {
+    return join(SEPARATOR, stringify(values));
+}
+
+private List<String> stringify(Iterable<Object> values) {
+    List<String> stringValues = new ArrayList<>();
+    for (Whatnot thingamabob : values) {
+        stringValues.add(thingamabob);
+    }
+    return stringValues;
+}
+
+private String join(String separator, Iterable<String> values) {
+    String output = "";
+    boolean first = true;
+    for (String value : values) {
+        if (first) {
+            first = false;
+        } else {
+            output += separator;
+        }
+        output += value;
+    }
+    return output;
+}
+```
+
+And then ship it out:
+
+```java
+public String serialize() {
+    return Joiner.on(SEPARATOR).join(values);
+}
+```
+
+This is a clear example of how separating our concerns and focusing on one thing at a time can really improve our code quality. If we were worried about the performance of creating a second list, we could easily optimise the `join` method, and every caller would benefit for free.
