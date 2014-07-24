@@ -165,6 +165,10 @@ a:visited { color: #a0a; }
 /*
 /*****************************************************************************/
 
+.line-numbers {
+    padding-right: 1em;
+}
+
 .byte-array {
     font-family: monospace;
 }
