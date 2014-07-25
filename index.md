@@ -449,3 +449,28 @@ w.innerHTML = TD.emoji.parse(t.nodeValue)
 `innerHTML` is the problem here. Any time you end up setting the HTML of an element directly, just like in the template above, you have to escape it. Failure to do so often causes bugs of this seriousness (though not normally of this scale).
 
 Sure, we can escape when necessary and hope we've covered all the bases, but there's a better way: just don't do it. Setting the `textContent` field instead, and constructing elements using the provided functions rather than concatenating HTML together, avoids problems like this.
+
+## This is awful. So what do I do?
+
+Strings are the most powerful tool we have in our programming languages. Like all things powerful, they should be used responsibly.
+
+### The Problems, in a Nutshell
+
+Misuse of strings can lead to bad software design, such as *coupling* infrastructure to business logic, which can make your code hard to extend, maintain, support and test. I'd argue that strings are actually an infrastructure-level concern, and that any code related to your core logic shouldn't touch them at all.
+
+Perhaps more importantly, strings stop us from guaranteeing *correctness*. Types are scary to some people, but strong wrappers for your data are important, because they stop us from creating massive security vulnerabilities. Munging HTML or SQL together by concatenating strings is convenient, but offers nothing in the way of security. Only by dealing with data as data and code as code can we avoid this.
+
+### The Solution
+
+There's a solution to both of these: use your type system properly. Create classes that wrap strings, and only expose the string itself (or a transformed variation) at the infrastructure level. Only split strings when you're ingesting the data, and at no point after. Until you need to output anything, don't concatenate at all—just store the data in sensibly-named fields and do all the work at once at the end.
+
+If you have a decent separation between your business logic and your infrastructure code, any code that munges strings belongs in the infrastructure layer, along with your HTTP endpoints, message queue adapters and database connections. You don't need them until you need to communicate with a third-party system, just like your adapters.
+
+So, in summary:
+
+  * Wrap your strings
+    * Only pass strings to class constructors
+    * Only expose strings at the last possible moment
+  * Keep all string code in your infrastructure layer
+
+Give it a try. I think you'll be pleasantly surprised.
