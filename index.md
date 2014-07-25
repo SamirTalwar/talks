@@ -1,8 +1,7 @@
 ---
 layout: default
+title: Highly Strung
 ---
-
-# Highly Strung
 
 ## Introduction
 
