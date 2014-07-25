@@ -415,3 +415,37 @@ section(id("catalog"),
 It's pretty much as easy to read, am I right? And it has the added bonus of no cross-site scripting (XSS) vulnerabilities.
 
 I should probably add that this HTML-building library doesn't actually exist. However, if you promise me you'll use it, I will build it for you.
+
+#### And now, another language
+
+In June of 2014, this tweet became very famous:
+
+<blockquote class="twitter-tweet" lang="en">
+    <p>&lt;script class=&quot;xss&quot;&gt;$(&#39;.xss&#39;).parents().eq(1).find(&#39;a&#39;).eq(1).click();$(&#39;[data-action=retweet]&#39;).click();alert(&#39;XSS in Tweetdeck&#39;)&lt;/script&gt;♥</p>
+    &mdash; *andy (@derGeruhn) <a href="https://twitter.com/derGeruhn/statuses/476764918763749376">June 11, 2014</a>
+</blockquote>
+
+Take a look at the number of retweets. This one is pretty special, but not for the reasons you might think. It exploited a bug in TweetDeck to perform an XSS attack. Fortunately, it was benign: it just popped up an alert box and retweeted itself to make everyone aware of the issue; not every attack is so friendly.
+
+That heart at the end isn't for fun, though. This attack only works when the closing script tag is followed by a multi-byte UTF-8 character; simple ASCII doesn't trigger it, but when there's emoji, that code path gets hit.
+
+The problem?
+
+```javascript
+for (   t = e[r],
+        w.innerHTML = TD.emoji.parse(t.nodeValue),
+        i = document.createDocumentFragment();
+    w.hasChildNodes();
+) {
+    i.appendChild(w.firstChild);
+```
+
+The relevant bit:
+
+```javascript
+w.innerHTML = TD.emoji.parse(t.nodeValue)
+```
+
+`innerHTML` is the problem here. Any time you end up setting the HTML of an element directly, just like in the template above, you have to escape it. Failure to do so often causes bugs of this seriousness (though not normally of this scale).
+
+Sure, we can escape when necessary and hope we've covered all the bases, but there's a better way: just don't do it. Setting the `textContent` field instead, and constructing elements using the provided functions rather than concatenating HTML together, avoids problems like this.
