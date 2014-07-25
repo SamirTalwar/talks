@@ -450,7 +450,79 @@ w.innerHTML = TD.emoji.parse(t.nodeValue)
 
 Sure, we can escape when necessary and hope we've covered all the bases, but there's a better way: just don't do it. Setting the `textContent` field instead, and constructing elements using the provided functions rather than concatenating HTML together, avoids problems like this.
 
-## This is awful. So what do I do?
+### Constant Confusion
+
+How often do you see code like this?
+
+```java
+public class Sprocket {
+    public static final String TYPE = "sprocket";
+}
+
+public class SprocketConnector {
+    public static final String TYPE = Sprocket.TYPE = ".connector";
+}
+
+public class Cog {
+    public static final String TYPE = "cog";
+}
+
+public class CogRotator {
+    public static final String TYPE = Cog.TYPE = ".rotator";
+}
+```
+
+It makes sense. For now. But then a couple of requirements come in: it should be `rotate:cog`. The order's changed, it's a verb now, and we need a colon (`:`) instead of a full stop (`.`).
+
+So we could go through our code base and change them all around. And when it happens again, we'll do it again, and…
+
+No. Stop it.
+
+We can move at least two of these problems into one common place. Let's get rid of that duplication.
+
+```java
+public class WidgetType {
+    private final String name;
+
+    public WidgetType(String name) {
+        this.name = name;
+    }
+
+    public WidgetAdapterType interact(String interaction) {
+        return new WidgetAdapterType(name, interaction);
+    }
+}
+
+public class WidgetAdapterType {
+    private final String name;
+    private final String interaction;
+
+    public WidgetType(String name, String interaction) {
+        this.name = name;
+        this.interaction = interaction;
+    }
+
+    public String forTransmission() {
+        return String.format("%s:%s", interaction, name);
+    }
+}
+```
+
+Now we can use it in the same way everywhere, and we'd only have to change the nouns to verbs.
+
+```java
+public class Sprocket {
+    public static final WidgetType TYPE = new WidgetType("sprocket");
+}
+
+public class SprocketConnector {
+    public static final WidgetAdapterType TYPE = Sprocket.TYPE.interact("connect");
+}
+```
+
+That'll do the trick. In addition, the method that returns a string is called `forTransmission`, which should make it clear to the caller that it's only to be used when transmitting the widget, and not for other, spurious reasons.
+
+## This is all awful. So what do I do?
 
 Strings are the most powerful tool we have in our programming languages. Like all things powerful, they should be used responsibly.
 
@@ -462,15 +534,10 @@ Perhaps more importantly, strings stop us from guaranteeing *correctness*. Types
 
 ### The Solution
 
-There's a solution to both of these: use your type system properly. Create classes that wrap strings, and only expose the string itself (or a transformed variation) at the infrastructure level. Only split strings when you're ingesting the data, and at no point after. Until you need to output anything, don't concatenate at all—just store the data in sensibly-named fields and do all the work at once at the end.
+There's a solution to both of these: use your type system properly. Create classes that wrap strings, and only expose the string itself (or a transformed variation) at the infrastructure level. Only split strings when you're ingesting the data, and at no point after. Until you need to output anything, don't concatenate at all—just store the data in sensibly-named fields and do all the work at once at the end. This helps us re-use code, avoids mixing the business with the underlying technologies and enables us to use our object-oriented programming language as it was designed, by adding methods to objects as more behaviour is required.
 
 If you have a decent separation between your business logic and your infrastructure code, any code that munges strings belongs in the infrastructure layer, along with your HTTP endpoints, message queue adapters and database connections. You don't need them until you need to communicate with a third-party system, just like your adapters.
 
-So, in summary:
-
-  * Wrap your strings
-    * Only pass strings to class constructors
-    * Only expose strings at the last possible moment
-  * Keep all string code in your infrastructure layer
+So, in summary, wrap your strings. Wrap them as early as possible, and don't expose them until the last possible moment.
 
 Give it a try. I think you'll be pleasantly surprised.
