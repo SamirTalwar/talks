@@ -392,6 +392,10 @@ Thirdly, it's far more extensible. If at some point in the future, the colour of
 </div>
 </section>
 
+<section class="slides-only">
+    <h1>Any questions so far?</h1>
+</section>
+
 ## Correctness
 {: .notes}
 
@@ -691,6 +695,6 @@ Give it a try. I think you'll be pleasantly surprised.
 </div>
 </section>
 
-<section markdown="1">
--- [@SamirTalwar](https://twitter.com/SamirTalwar).
+<section class="slides-only">
+    <h1>Thank you.</h1>
 </section>

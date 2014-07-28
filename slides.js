@@ -17,8 +17,9 @@ function reveal() {
 }
 
 $('.enable-slides').click(function() {
-    $('.notes').remove();
+    $(this).hide();
+    $('.notes').hide();
+    $('.slides-only').show();
     reveal();
     $('.slides section').css('margin-top', '400px');
-    $(this).hide();
 });
