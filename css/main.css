@@ -167,10 +167,13 @@ a:visited { color: #a0a; }
 /*****************************************************************************/
 
 blockquote {
-    font-family: 'kingthings_calligraphica_liLt';
-    font-size: 1.5em;
     padding: 10px 40px;
     background: #eee;
+}
+
+.shakespeare {
+    font-family: 'kingthings_calligraphica_liLt';
+    font-size: 1.5em;
 }
 
 .twitter-tweet {

