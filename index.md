@@ -99,7 +99,7 @@ Oh, splitting. You devil, you.
 
 Hold your arguments for now. All will become clear.
 
-## Case Studies
+## Complexity
 
 ### Single Responsibility
 
@@ -326,6 +326,8 @@ Secondly, we've made it absolutely obvious to any caller of this code exactly wh
 
 Thirdly, it's far more extensible. If at some point in the future, the colour of a tool becomes something to consider when checking whether a tool is contained by a toolbox, we don't have to change the parameter list of this method, which means callers don't have to care. Only the implementation needs to change.
 
+## Correctness
+
 ### A perennial favourite
 
 Pop quiz: what's wrong with this code?
@@ -394,7 +396,7 @@ This way, the database will handle the user-supplied input separately from the S
 
 A number of threats to security involve convincing a program to treat data as executable instructions. Most of the attacks on Microsoft and Oracle which mean you have to update Windows and Java every seventeen minutes buffer overflow attacks. Because arrays aren't really a thing in C, you can *overflow* the array by simply writing past the end of it; there are no checks to ensure user input fits inside the array. If you are familiar with the memory layout of the application, you can write enough that you overwrite machine instructions with your own, giving you complete control of the application execution simply by providing more text than was expected.
 
-### Spit it out
+### Too much to think about
 
 Earlier, we pulled some data in from a CSV file. Now we're going to send out some HTML.
 
