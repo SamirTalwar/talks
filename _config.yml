@@ -1,3 +1,4 @@
 name: Highly Strung
-markdown: redcarpet
-pygments: true
+markdown: kramdown
+kramdown:
+    input: GFM

