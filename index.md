@@ -412,7 +412,7 @@ We won't make the same mistake we made with the SQL. No concatenation, this time
 
             <ol class="reviews">
                 <#list book.reviews as review>
-                    <li>${review.text} -- #{review.reviewerName}</li>
+                    <li>${review.text} -- ${review.reviewerName}</li>
                 </#list>
             </ol>
         </div>
@@ -433,7 +433,29 @@ document.location = 'http://install.malware.com/';
 
 Lovely. Everyone will be redirected to an evil website, and no one will read the other marvellous reviews. Sad faces all around.
 
-We could escape the text by using the `?html` post-processor (`${review.text?html}`), but then we'd have to do that for everything, and you know you'd forget one.
+This is known as a cross-site scripting vulnerability, or "XSS", because it's often used to inject a script from another, malicious domain. It's a very common style of exploit on the web today.
+
+We could escape the text by using the `?html` post-processor (`${review.text?html}`):
+
+```html
+<section id="catalog">
+    <#list books as book>
+        <div class="book" id="${book.id?html}">
+            <h1><span class="title">${book.title?html}</span>,
+                by <span class="author">${book.author?html}</span></h1>
+            <p class="description">${book.description?html}</p>
+
+            <ol class="reviews">
+                <#list book.reviews as review>
+                    <li>${review.text?html} -- ${review.reviewerName?html}</li>
+                </#list>
+            </ol>
+        </div>
+    </#list>
+</section>
+```
+
+Great. Now go do that for all your HTML. And don't forget any!
 
 How about we write code that really does separate the instructions from the text instead?
 
@@ -442,18 +464,38 @@ section(id("catalog"),
     many(books.map(book ->
         div(className("book"), id(book.id()),
             h1(
-                span(className("title"), book.title()),
-                ", by ",
-                span(className("author"), book.author())),
-            p(className("description"), book.description())),
+                span(className("title"), text(book.title())),
+                text(", by "),
+                span(className("author"), text(book.author()))),
+            p(className("description"), text(book.description()))),
         ol(className("reviews"),
             many(books.reviews().map(review ->
-                li(review.text(), " -- ", review.reviewerName())))))))
+                li(text(review.text()),
+                   text(" -- "),
+                   text(review.reviewerName()))))))))
 ```
 
-It's pretty much as easy to read, am I right? And it has the added bonus of no cross-site scripting (XSS) vulnerabilities.
+This may look ridiculous, so allow me to explain.
 
-I should probably add that this HTML-building library doesn't actually exist. However, if you promise me you'll use it, I will build it for you.
+For each element type, we have a method. Here, I've used static methods to keep it a little shorter, but they could just as well be instance methods.
+
+Here's the signature of the `section` method:
+
+```java
+public static Node section(Node... children) { ... }
+```
+
+Everything is a `Node`, not a string. `Node`'s an interface that looks something like this:
+
+```java
+public interface Node {
+    String toXml();
+}
+```
+
+There are three implementations of `Node`: `Element`, `Attribute` and `Text`. They all know how to render themselves, and `Text` class will escape any HTML special characters as it does so. This means that as long as we get the three implementations of `toXml` correct, which we can do with a pretty high confidence level just by writing a bunch of test cases, it should be impossible to inject HTML.
+
+I should probably add that this HTML-building library doesn't actually exist. However, if you promise me you'll use it, I will build it for you. I think it's almost as easy to read as the HTML equivalent.
 
 #### And now, another language
 
