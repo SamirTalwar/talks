@@ -1,3 +1,5 @@
+@import url('../vendor/kingthingscalligraphica_light_macroman/stylesheet.css');
+
 /*****************************************************************************/
 /*
 /* Common
@@ -163,6 +165,13 @@ a:visited { color: #a0a; }
 /* Custom
 /*
 /*****************************************************************************/
+
+blockquote {
+    font-family: 'kingthings_calligraphica_liLt';
+    font-size: 1.5em;
+    padding: 10px 40px;
+    background: #eee;
+}
 
 .twitter-tweet {
     margin: 1em auto !important;
