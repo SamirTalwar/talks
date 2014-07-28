@@ -197,3 +197,22 @@ blockquote {
     padding: 4px;
     text-align: center;
 }
+
+.enable-slides button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #f60;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: 'Impact';
+    font-size: 2em;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.enable-slides button:hover {
+    background: #f93;
+    cursor: pointer;
+}

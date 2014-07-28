@@ -12,14 +12,30 @@
 
     <body>
         <div class="site">
-            <header>
-                <h1>{{ page.title }}</h1>
-            </header>
+            <div class="enable-slides">
+                <button>Let's see the slides</button>
+            </div>
 
-            {{ content }}
+            <div class="reveal">
+                <div class="slides">
+                    <section>
+                        <header>
+                            <h1>{{ page.title }}</h1>
+                        </header>
+                    </section>
+
+                    {{ content }}
+                </div>
+            </div>
         </div>
 
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
         <script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
         <script src="vendor/prism/prism.js" charset="utf-8"></script>
+        <script src="vendor/reveal.js/lib/js/head.min.js"></script>
+        <script src="vendor/reveal.js/js/reveal.min.js"></script>
+
+        <script src="slides.js"></script>
     </body>
 </html>

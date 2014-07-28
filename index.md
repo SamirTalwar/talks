@@ -3,6 +3,7 @@ layout: default
 title: Highly Strung
 ---
 
+<section markdown="1">
 ## Introduction
 
 ### Who are you?
@@ -547,3 +548,4 @@ If you have a decent separation between your business logic and your infrastruct
 So, in summary, wrap your strings. Wrap them as early as possible, and don't expose them until the last possible moment.
 
 Give it a try. I think you'll be pleasantly surprised.
+</section>
