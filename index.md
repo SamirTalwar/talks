@@ -11,11 +11,11 @@ title: Highly Strung
 
 ### What is the point of this talk?
 
-Strings are bad, m'kay.
+Strings are terrifying.
 
 ### Explain, fool.
 
-Strings are actually a Good Thing™.
+I will, I promise.
 
 But first…
 
