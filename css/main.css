@@ -186,11 +186,12 @@ blockquote {
     padding-right: 1em;
 }
 
-.byte-array {
+.slides section .byte-array {
+    margin: auto;
     font-family: monospace;
 }
 
-.byte-array td {
+.slides section .byte-array td {
     width: 16px;
     height: 16px;
     border: 1px solid #ccc;
@@ -215,4 +216,8 @@ blockquote {
 .enable-slides button:hover {
     background: #f93;
     cursor: pointer;
+}
+
+.reveal pre.tiny {
+    font-size: 0.5em;
 }
