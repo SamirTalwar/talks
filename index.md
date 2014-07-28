@@ -288,6 +288,44 @@ The caller is now also responsible for closing the file, but hopefully we've mad
 
 CSV-reading, among many other things, is infrastructure-level code. It should not be intermingled with application-level concerns. Decoupling these two will make the real purpose of the application much clearer.
 
+### Reduce your exposure
+
+Here's a thing we do way too often:
+
+```java
+public class Toolboxen {
+    public Toolbox containingTool(String toolName) {
+        if (toolName.isEmpty()) {
+            throw new NotAToolException("toolName is empty");
+        } else if (!VALID_TOOLS.contains(toolName)) {
+            throw new NotAToolException("toolName: " + toolName);
+        }
+
+        // do the thing
+    }
+}
+```
+
+That's a lot of boilerplate to be copied around anywhere tools are used.
+
+Instead, what about this?
+
+```java
+public class Toolboxen {
+    public Toolbox containing(Tool tool) {
+        /// do the thing
+    }
+}
+```
+
+Depending on the desired behaviour, `Tool` could be an interface, an enumeration, or just a simple class wrapping the name. But it offers us several advantages.
+
+First off, we've moved the error-checking somewhere else, either to the thing that constructs the `Tool` or the `Tool`'s own constructor. By converting the string into a domain object as soon as possible, we've moved our error-handling to a much earlier point in the application flow, allowing us to trust the objects in our system from that point onwards.
+
+Secondly, we've made it absolutely obvious to any caller of this code exactly what we do and do not accept. They don't have to worry about casing, language or anything else: they know they need a `Tool` object, and provided they can find one of those, they're good.
+
+Thirdly, it's far more extensible. If at some point in the future, the colour of a tool becomes something to consider when checking whether a tool is contained by a toolbox, we don't have to change the parameter list of this method, which means callers don't have to care. Only the implementation needs to change.
+
 ### A perennial favourite
 
 Pop quiz: what's wrong with this code?
@@ -448,78 +486,6 @@ w.innerHTML = TD.emoji.parse(t.nodeValue)
 `innerHTML` is the problem here. Any time you end up setting the HTML of an element directly, just like in the template above, you have to escape it. Failure to do so often causes bugs of this seriousness (though not normally of this scale).
 
 Sure, we can escape when necessary and hope we've covered all the bases, but there's a better way: just don't do it. Setting the `textContent` field instead, and constructing elements using the provided functions rather than concatenating HTML together, avoids problems like this.
-
-### Constant Confusion
-
-How often do you see code like this?
-
-```java
-public class Sprocket {
-    public static final String TYPE = "sprocket";
-}
-
-public class SprocketConnector {
-    public static final String TYPE = Sprocket.TYPE = ".connector";
-}
-
-public class Cog {
-    public static final String TYPE = "cog";
-}
-
-public class CogRotator {
-    public static final String TYPE = Cog.TYPE = ".rotator";
-}
-```
-
-It makes sense. For now. But then a couple of requirements come in: it should be `rotate:cog`. The order's changed, it's a verb now, and we need a colon (`:`) instead of a full stop (`.`).
-
-So we could go through our code base and change them all around. And when it happens again, we'll do it again, and…
-
-No. Stop it.
-
-We can move at least two of these problems into one common place. Let's get rid of that duplication.
-
-```java
-public class WidgetType {
-    private final String name;
-
-    public WidgetType(String name) {
-        this.name = name;
-    }
-
-    public WidgetAdapterType interact(String interaction) {
-        return new WidgetAdapterType(name, interaction);
-    }
-}
-
-public class WidgetAdapterType {
-    private final String name;
-    private final String interaction;
-
-    public WidgetType(String name, String interaction) {
-        this.name = name;
-        this.interaction = interaction;
-    }
-
-    public String forTransmission() {
-        return String.format("%s:%s", interaction, name);
-    }
-}
-```
-
-Now we can use it in the same way everywhere, and we'd only have to change the nouns to verbs.
-
-```java
-public class Sprocket {
-    public static final WidgetType TYPE = new WidgetType("sprocket");
-}
-
-public class SprocketConnector {
-    public static final WidgetAdapterType TYPE = Sprocket.TYPE.interact("connect");
-}
-```
-
-That'll do the trick. In addition, the method that returns a string is called `forTransmission`, which should make it clear to the caller that it's only to be used when transmitting the widget, and not for other, spurious reasons.
 
 ## This is all awful. So what do I do?
 
