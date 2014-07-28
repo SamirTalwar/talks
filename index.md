@@ -334,13 +334,13 @@ Pop quiz: what's wrong with this code?
 
 ```java
 public boolean authenticate(String username, String password) {
-    String encryptedPassword = encrypt(password);
+    String hashedPassword = hash(password, saltFor(username));
 
     Statement statement = connection.createStatement();
     ResultSet resultSet = statement.executeQuery(
         "SELECT COUNT(*) count FROM users" +
         " WHERE username = '" + username + "'" +
-        "   AND password = '" + encryptedPassword + "'");
+        "   AND password = '" + hashedPassword + "'");
 
     resultSet.next();
     return resultSet.getInt("count") == 1;
@@ -377,14 +377,14 @@ The correct way to do things is to, of course, use parameterised SQL:
 
 ```java
 public boolean authenticate(String username, String password) {
-    String encryptedPassword = encrypt(password);
+    String hashedPassword = hash(password, saltFor(username));
 
     Statement statement = connection.prepareStatement(
         "SELECT COUNT(*) count FROM users" +
         " WHERE username = ?"
         "   AND password = ?");
     statement.setString(1, username);
-    statement.setString(2, encryptedPassword);
+    statement.setString(2, hashedPassword);
     ResultSet resultSet = statement.executeQuery();
 
     resultSet.next();
