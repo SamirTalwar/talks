@@ -420,9 +420,7 @@ public boolean authenticate(String username, String password) {
     return resultSet.getInt("count") == 1;
 }
 ```
-</section>
 
-<section markdown="1">
 <div class="notes" markdown="1">
 If you said that it's not using `String.format`, you get a demerit. Stay after class.
 
@@ -432,9 +430,8 @@ I think most of you will know this one already. It's subject to an SQL injection
 ```java
 authenticate("hacker", "' OR '' = '");
 ```
-</section>
+{: .fragment}
 
-<section markdown="1">
 <div class="notes" markdown="1">
 The resulting SQL will look like this:
 </div>
@@ -444,9 +441,8 @@ SELECT COUNT(*) count FROM users
  WHERE username = 'hacker'
    AND password = '' OR '' = ''
 ```
-</section>
+{: .fragment}
 
-<section markdown="1">
 <div class="notes" markdown="1">
 Boolean operator precedence plays a role here, so let's reformat and put the parentheses in:
 </div>
@@ -456,6 +452,7 @@ SELECT COUNT(*) count FROM users
  WHERE (username = 'hacker' AND password = '')
     OR '' = ''
 ```
+{: .fragment}
 </section>
 
 <section markdown="1">
