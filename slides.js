@@ -17,7 +17,7 @@ function reveal() {
 }
 
 $('.enable-slides').click(function() {
-    $(this).hide();
+    $('.actions').hide();
     $('.notes').hide();
     $('.slides-only').show();
     reveal();

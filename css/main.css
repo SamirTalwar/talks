@@ -200,23 +200,47 @@ pre { font-size: 0.9em; }
     text-align: center;
 }
 
-.enable-slides button {
+.actions {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: #f60;
+}
+
+.action {
+    margin-bottom: 10px;
     border: none;
     border-radius: 5px;
-    padding: 10px;
+    padding: 20px;
+    background: black;
     font-family: 'Impact';
     font-size: 2em;
+    text-align: center;
     text-transform: uppercase;
+}
+
+.action a {
+    text-decoration: none;
     color: #fff;
 }
 
-.enable-slides button:hover {
-    background: #f93;
+.action:hover {
     cursor: pointer;
+}
+
+.enable-slides {
+    background: #06f;
+}
+
+.enable-slides:hover {
+    background: #39f;
+}
+
+.video {
+    background: #f60;
+}
+
+.video:hover {
+    background: #f93;
 }
 
 .reveal pre.tiny {

@@ -12,9 +12,17 @@
 
     <body>
         <div class="site">
-            <div class="enable-slides">
-                <button>Let's see the slides</button>
-            </div>
+            <aside class="actions">
+                <div class="action enable-slides">
+                    <a href="#">Let's see the slides</a>
+                </div>
+
+                {% if page.video %}
+                    <div class="action video">
+                        <a href="{{ page.video }}">Watch the video</a>
+                    </div>
+                {% endif %}
+            </aside>
 
             <div class="reveal">
                 <div class="slides">

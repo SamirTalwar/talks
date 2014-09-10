@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Highly Strung
+video: http://youtu.be/KMnv-A-ANP4
 ---
 
 ## Introduction
