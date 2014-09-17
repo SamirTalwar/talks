@@ -2,6 +2,7 @@
 layout: default
 title: Highly Strung
 video: http://youtu.be/KMnv-A-ANP4
+date: 2014-07-28 17:00:00 +0100
 ---
 
 ## Introduction
