@@ -16,10 +16,14 @@ function reveal() {
     });
 }
 
-$('.enable-slides').click(function() {
-    $('.actions').hide();
-    $('.notes').hide();
-    $('.slides-only').show();
+$('.action.show-essay').click(function() {
+    document.location.reload();
+});
+
+$('.action.show-presentation').click(function() {
+    $('body')
+        .addClass('presentation')
+        .removeClass('essay');
     reveal();
     $('.slides section').css('margin-top', '400px');
 });

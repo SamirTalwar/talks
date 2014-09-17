@@ -27,9 +27,9 @@ h2, h3, h4, h5, h6 { margin-bottom: 1em; }
 
 p { margin: 1em 0; }
 
-a         { color: #00a; }
-a:hover   { color: #000; }
-a:visited { color: #a0a; }
+a         { color: #36f; }
+a:hover   { color: #69f; }
+a:visited { color: #a6a; }
 
 pre { font-size: 0.9em; }
 
@@ -64,7 +64,6 @@ pre { font-size: 0.9em; }
   text-align: justify;
   width: 42em;
   margin: 3em auto 2em;
-  line-height: 1.5em;
 }
 
 .header a {
@@ -187,6 +186,18 @@ pre { font-size: 0.9em; }
     padding-right: 1em;
 }
 
+body.essay {
+    line-height: 1.5em;
+}
+
+body.essay .slides-only {
+    display: none;
+}
+
+body.presentation .notes {
+    display: none;
+}
+
 .slides section .byte-array {
     margin: auto;
     font-family: monospace;
@@ -202,45 +213,21 @@ pre { font-size: 0.9em; }
 
 .actions {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1em;
 }
 
-.action {
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 5px;
-    padding: 20px;
-    background: black;
-    font-family: 'Impact';
-    font-size: 2em;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-.action a {
+a.action {
     text-decoration: none;
-    color: #fff;
+    color: #36f;
 }
 
-.action:hover {
+a.action:hover {
     cursor: pointer;
-}
-
-.enable-slides {
-    background: #06f;
-}
-
-.enable-slides:hover {
-    background: #39f;
-}
-
-.video {
-    background: #f60;
-}
-
-.video:hover {
-    background: #f93;
+    color: #69f;
 }
 
 .reveal pre.tiny {

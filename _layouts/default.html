@@ -10,17 +10,14 @@
         <link rel="stylesheet" href="vendor/prism/prism.css">
     </head>
 
-    <body>
+    <body class="essay">
         <div class="site">
             <aside class="actions">
-                <div class="action enable-slides">
-                    <a href="#">Let's see the slides</a>
-                </div>
-
+                <span>View as:</span>
+                <a class="action show-essay" href="#">Essay</a>
+                &bull; <a class="action show-presentation" href="#">Presentation</a>
                 {% if page.video %}
-                    <div class="action video">
-                        <a href="{{ page.video }}">Watch the video</a>
-                    </div>
+                    &bull; <a class="action show-video" href="{{ page.video }}">Video</a>
                 {% endif %}
             </aside>
 
