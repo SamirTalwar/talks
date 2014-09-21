@@ -17,11 +17,11 @@
                 <a class="action show-essay" href="#">Essay</a>
                 &bull; <a class="action show-presentation" href="#">Presentation</a>
                 {% if page.video %}
-                    &bull; <a class="action show-video" href="{{ page.video }}">Video</a>
+                    &bull; <a class="action show-video" href="http://youtu.be/{{ page.video.id }}">Video</a>
                 {% endif %}
             </aside>
 
-            <div class="reveal">
+            <div class="reveal document">
                 <div class="slides">
                     <section>
                         <header>
@@ -33,6 +33,12 @@
                     {{ content }}
                 </div>
             </div>
+
+            {% if page.video %}
+                <div class="video-player">
+                    <iframe src="//www.youtube.com/embed/{{ page.video.id }}" frameborder="0" allowfullscreen></iframe>
+                </div>
+            {% endif %}
         </div>
 
         <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -42,6 +48,6 @@
         <script src="vendor/reveal.js/lib/js/head.min.js"></script>
         <script src="vendor/reveal.js/js/reveal.min.js"></script>
 
-        <script src="slides.js"></script>
+        <script src="actions.js"></script>
     </body>
 </html>

@@ -68,35 +68,9 @@ pre { font-size: 0.9em; }
   margin: 3em auto 2em;
 }
 
-.header a {
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.title {
-  display: inline-block;
-  margin-bottom: 2em;
-}
-
-.title a {
-  color: #a00;
-}
-
-.title a:hover {
-  color: #000;
-}
-
-.header a.extra {
-  color: #aaa;
-  margin-left: 1em;
-}
-
-.header a.extra:hover {
-  color: #000;
-}
-
-.meta {
-  color: #aaa;
+.video .site {
+  width: auto;
+  margin: 8em;
 }
 
 .footer {
@@ -170,47 +144,52 @@ pre { font-size: 0.9em; }
 /*
 /*****************************************************************************/
 
-.reveal blockquote {
-    padding: 10px 40px;
-    background: #eee;
-}
-
-.reveal blockquote.shakespeare {
-    font-family: 'kingthings_calligraphica_liLt';
-    font-size: 1.5em;
-}
-
-.twitter-tweet {
-    margin: 1em auto !important;
-}
-
-.line-numbers {
-    padding-right: 1em;
-}
-
 body.essay {
     line-height: 1.5em;
 }
 
-body.essay .slides-only {
+body.essay .slides-only, body.video .slides-only,
+body.presentation .notes,
+body.essay .video-player, body.presentation .video-player,
+body.video .document
+{
     display: none;
 }
 
-body.presentation .notes {
-    display: none;
+.document .twitter-tweet {
+    margin: 1em auto !important;
 }
 
-.slides section .byte-array {
+.document blockquote {
+    padding: 10px 40px;
+    background: #eee;
+}
+
+.document blockquote.shakespeare {
+    font-family: 'kingthings_calligraphica_liLt';
+    font-size: 1.5em;
+}
+
+.document section .byte-array {
     margin: auto;
     font-family: monospace;
 }
 
-.slides section .byte-array td {
+.document section .byte-array td {
     width: 16px;
     height: 16px;
     border: 1px solid #ccc;
     padding: 4px;
     text-align: center;
+}
+
+.document .line-numbers {
+    padding-right: 1em;
+}
+
+.document pre.tiny {
+    font-size: 0.5em;
+    line-height: 1em;
 }
 
 .actions {
@@ -232,11 +211,18 @@ a.action:hover {
     color: #69f;
 }
 
-.reveal pre.tiny {
-    font-size: 0.5em;
-    line-height: 1em;
+.video-player {
+    position: relative;
+    padding-bottom: 56.25%;
+    padding-top: 25px;
+    height: 0;
+    max-height: 90%;
 }
 
-.slides-only {
-    display: none;
+.video-player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
