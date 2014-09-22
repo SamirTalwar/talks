@@ -1,5 +1,20 @@
 (function() {
-    var revealed = false;
+    var revealed = false,
+        modeActions = {
+            essay: function() { unreveal(); },
+            presentation: function() { reveal(); },
+            video: function() { unreveal(); }
+        };
+
+    function show(mode) {
+        history.pushState({mode: mode}, '', '?mode=' + mode);
+        $('body')
+            .removeClass('essay')
+            .removeClass('presentation')
+            .removeClass('video')
+            .addClass(mode);
+        modeActions[mode]();
+    }
 
     function reveal() {
         $('head').append('<link rel="stylesheet" href="vendor/reveal.js/css/reveal.min.css">');
@@ -25,32 +40,27 @@
         revealed = true;
     }
 
-    $('.action.show-essay').click(function(event) {
-        event.preventDefault();
-        $('body')
-            .addClass('essay')
-            .removeClass('presentation')
-            .removeClass('video');
-
+    function unreveal() {
         if (revealed) {
             document.location.reload();
         }
-    });
+    }
 
-    $('.action.show-presentation').click(function(event) {
-        event.preventDefault();
-        $('body')
-            .addClass('presentation')
-            .removeClass('essay')
-            .removeClass('video');
-        reveal();
-    });
+    function switchTo(mode) {
+        return function(event) {
+            event.preventDefault();
+            show(mode);
+        };
+    }
 
-    $('.action.show-video').click(function(event) {
-        event.preventDefault();
-        $('body')
-            .addClass('video')
-            .removeClass('essay')
-            .removeClass('presentation');
+    $('.action.show-essay').click(switchTo('essay'));
+    $('.action.show-presentation').click(switchTo('presentation'));
+    $('.action.show-video').click(switchTo('video'));
+
+    $(document).ready(function() {
+        var mode = Reveal.getQueryHash().mode;
+        if (mode) {
+            show(mode);
+        }
     });
 }());
