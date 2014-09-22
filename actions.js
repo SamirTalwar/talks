@@ -7,13 +7,20 @@
         };
 
     function show(mode) {
-        history.pushState({mode: mode}, '', '?mode=' + mode);
         $('body')
             .removeClass('essay')
             .removeClass('presentation')
             .removeClass('video')
             .addClass(mode);
         modeActions[mode]();
+    }
+
+    function switchTo(mode) {
+        return function(event) {
+            event.preventDefault();
+            history.pushState({mode: mode}, '', '?mode=' + mode);
+            show(mode);
+        };
     }
 
     function reveal() {
@@ -46,16 +53,15 @@
         }
     }
 
-    function switchTo(mode) {
-        return function(event) {
-            event.preventDefault();
-            show(mode);
-        };
-    }
-
     $('.action.show-essay').click(switchTo('essay'));
     $('.action.show-presentation').click(switchTo('presentation'));
     $('.action.show-video').click(switchTo('video'));
+
+    $(window).on('popstate', function(event) {
+        if (event.originalEvent.state && event.originalEvent.state.mode) {
+            show(event.originalEvent.state.mode);
+        }
+    });
 
     $(document).ready(function() {
         var mode = Reveal.getQueryHash().mode;
