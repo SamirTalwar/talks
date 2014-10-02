@@ -431,7 +431,7 @@ I think most of you will know this one already. It's subject to an SQL injection
 </div>
 
 ```java
-authenticate("hacker", "' OR '' = '");
+authenticate("Eve' -- ", "totally hacking into Eve's account");
 ```
 {: .fragment}
 
@@ -440,27 +440,16 @@ The resulting SQL will look like this:
 </div>
 
 ```sql
-SELECT COUNT(*) count FROM users
- WHERE username = 'hacker'
-   AND password = '' OR '' = ''
+SELECT COUNT(*) count FROM users WHERE username = 'Eve' -- ' AND password = 'totally hacking into Eve's account'
 ```
 {: .fragment}
 
-<div class="notes" markdown="1">
-Boolean operator precedence plays a role here, so let's reformat and put the parentheses in:
-</div>
-
-```sql
-SELECT COUNT(*) count FROM users
- WHERE (username = 'hacker' AND password = '')
-    OR '' = ''
-```
-{: .fragment}
+In most databases, `--` marks the start of a comment, which continues until the end of the line, totally removing the password check from the equation.
 </section>
 
 <section markdown="1">
 <div class="notes" markdown="1">
-Yup. Turns out that password will get you into a lot of badly-written websites. And it's easy to test for. On the *really* broken ones, using `'` in your password will crash the website.
+Yup. Turns out that username will get you into a lot of badly-written websites. And it's easy to test for. On the *really* broken ones, using `'` in your username or password will crash the website.
 
 The correct way to do things is to, of course, use parameterised SQL:
 </div>
@@ -471,7 +460,7 @@ public boolean authenticate(String username, String password) {
 
     Statement statement = connection.prepareStatement(
         "SELECT COUNT(*) count FROM users" +
-        " WHERE username = ?"
+        " WHERE username = ?" +
         "   AND password = ?");
     statement.setString(1, username);
     statement.setString(2, hashedPassword);
