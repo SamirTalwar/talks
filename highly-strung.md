@@ -437,9 +437,8 @@ authenticate("Eve' -- ", "totally hacking into Eve's account");
 ```
 {: .fragment}
 
-<div class="notes" markdown="1">
 The resulting SQL will look like this:
-</div>
+{: .notes}
 
 ```sql
 SELECT COUNT(*) count FROM users WHERE username = 'Eve' -- ' AND password = 'totally hacking into Eve's account'
@@ -447,6 +446,7 @@ SELECT COUNT(*) count FROM users WHERE username = 'Eve' -- ' AND password = 'tot
 {: .fragment}
 
 In most databases, `--` marks the start of a comment, which continues until the end of the line, totally removing the password check from the equation.
+{: .notes}
 </section>
 
 <section markdown="1">
