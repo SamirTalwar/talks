@@ -1,4 +1,6 @@
 name: Highly Strung
 markdown: kramdown
 kramdown:
-    input: GFM
+  input: GFM
+gems:
+  - jekyll-redirect-from
