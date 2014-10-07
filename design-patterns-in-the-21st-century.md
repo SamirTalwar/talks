@@ -246,3 +246,142 @@ PList<Thing> withExtras(PList<Thing> things) {
 We can call that second one as many times as we like.<br/>Same input, same output.
 </div>
 </section>
+
+<section markdown="1">
+## On to the Good Stuff
+</section>
+
+<section markdown="1">
+### What is a Design Pattern, anyway?
+
+*Design Patterns* was a book written by the "Gang of Four" very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
+{: .notes}
+
+<p style="text-align: center;"><img src="/assets/images/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
+
+By naming these patterns and providing a good starting point, they hoped to provide a consistent *language* for developers, as well as providing these tools up front.
+{: .notes}
+</section>
+
+<section markdown="1">
+The originator of the concept was the architect Christopher Alexander.
+{: .notes}
+
+> The elements of this language are entities called patterns. Each pattern describes a problem that occurs over and over again in our environment, and then describes the core of the solution to that problem, in such a way that you can use this solution a million times over, without ever doing it the same way twice. <cite>— Christopher Alexander</cite>
+</section>
+
+<section markdown="1">
+### Bad Design Patterns
+
+Not all design patterns in the Gang of Four's book are treated equally by contemporary programmers. A number of them are seen as examples of bad design.
+{: .notes}
+
+<div class="fragment" markdown="1">
+Here's my favourite:
+
+```java
+public class DumpingGround {
+    private static DumpingGround instance = null;
+
+    private DumpingGround() { }
+
+    public static synchronized DumpingGround getInstance() {
+        if (instance == null) {
+            instance = new DumpingGround();
+        }
+        return instance;
+    }
+}
+```
+</div>
+
+<div class="fragment" markdown="1">
+Ew.
+</div>
+
+There's so much wrong with that code. This is an example of the *singleton pattern*, which is an idiom for sharing an object throughout your codebase with minimum effort. Assuming you want to write code that is unmaintainable. Singleton objects are pervasive—they get everywhere—and so your design becomes incredibly coupled to this one object. That means that replacing it, changing it or reworking it is practically impossible. It also makes it very hard to test your code, as the singleton has state, and so it, and everything that depends on it, becomes referentially opaque.
+{: .notes}
+
+There are more bad design patterns, which I will not dwell on further. Let's take a look at one I quite like.
+{: .notes}
+</section>
+
+<section markdown="1">
+### The Abstract Factory Pattern
+
+This pattern is used *everywhere* in Java code, especially in more "enterprisey" code bases. It looks something like this:
+
+```java
+public interface Bakery {
+    Pastry bakePastry();
+    Cake bakeCake();
+}
+
+public class DanishBakery {
+    @Override public Pastry bakePastry() {
+        return new DanishPastry();
+    }
+
+    @Override public Cake bakeCake() {
+        return new Aeblekage();
+    }
+}
+```
+</section>
+
+<section markdown="1">
+That's a fairly general example. In actual fact, most factories only have one "create" method.
+
+```java
+public interface Bakery extends Supplier<Pastry> {
+    @Override
+    Pastry get();
+}
+```
+
+<div class="fragment" markdown="1">
+And often comply with a very generic interface:
+
+```java
+package java.util.function;
+
+@FunctionalInterface
+public interface Supplier<T> {
+    /**
+     * Gets a result.
+     *
+     * @return a result
+     */
+    T get();
+}
+```
+</div>
+
+<div class="fragment" markdown="1">
+Oh look, a function.
+</div>
+
+This denegerate case is pretty common in in the Abstract Factory pattern, as well as many others. While most of them provide for lots of discrete pieces of functionality, and so have lots of methods, we often tend to break them up into single-method types, either for flexibility or because we just don't need more than one thing at a time.
+{: .notes}
+</section>
+
+<section markdown="1">
+So what's the functional equivalent to this?
+
+<div class="fragment" markdown="1">
+```java
+Bakery danishPastryBakery = () -> new DanishPastry();
+```
+</div>
+
+<div class="fragment" markdown="1">
+Or simply:
+
+```java
+Supplier<Pastry> danishPastryBakery = DanishPastry::new;
+```
+</div>
+
+Voila. Our interface has gone. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. This is brilliant, but we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
+{: .notes}
+</section>
