@@ -19,7 +19,6 @@ body {
   background-color: #FFF;
   font-family: Helvetica, Arial, sans-serif;
   font-size: small;
-  text-align: center;
 }
 
 body.essay header { margin-bottom: 2em; }
@@ -34,6 +33,11 @@ a:hover   { color: #69f; }
 a:visited { color: #a6a; }
 
 pre { margin-bottom: 1.5em; font-size: 0.9em; }
+
+.presentation img {
+    max-width: 100%;
+    max-height: 100%;
+}
 
 /*****************************************************************************/
 /*
@@ -63,9 +67,12 @@ pre { margin-bottom: 1.5em; font-size: 0.9em; }
 
 .site {
   font-size: 115%;
-  text-align: justify;
   width: 42em;
   margin: 3em auto 2em;
+}
+
+.site, .site .reveal .slides {
+  text-align: justify;
 }
 
 .video .site {
@@ -173,6 +180,11 @@ body.video .document .slides > :not(:first-child)
 .document blockquote.shakespeare {
     font-family: 'kingthings_calligraphica_liLt';
     font-size: 1.5em;
+}
+
+.document blockquote cite {
+    display: block;
+    text-align: right;
 }
 
 .document section .byte-array {
