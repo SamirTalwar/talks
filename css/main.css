@@ -22,18 +22,18 @@ body {
   text-align: center;
 }
 
-header { margin-bottom: 2em; }
-header h1 { width: 50%; margin-bottom: 0; border-bottom: 1px solid #ccc; }
-header h2 { width: 50%; margin-bottom: 0; font-size: small; color: #999; }
-h2, h3, h4, h5, h6 { margin-bottom: 1em; }
+body.essay header { margin-bottom: 2em; }
+body.essay header h1 { margin: 0; border-bottom: 1px solid #ccc; }
+body.essay header h2 { margin: 0; font-size: small; color: #999; }
+h2, h3, h4, h5, h6 { margin: 1em 0; }
 
-p { margin: 1em 0; }
+p, .document .slides p { margin: 1em 0; }
 
 a         { color: #36f; }
 a:hover   { color: #69f; }
 a:visited { color: #a6a; }
 
-pre { font-size: 0.9em; }
+pre { margin-bottom: 1.5em; font-size: 0.9em; }
 
 /*****************************************************************************/
 /*
@@ -143,6 +143,11 @@ pre { font-size: 0.9em; }
 /* Custom
 /*
 /*****************************************************************************/
+
+body.essay h1, body.essay h2, body.essay h3,
+body.presentation h1, body.presentation h2, body.presentation h3 {
+    margin-bottom: 1em;
+}
 
 body.essay {
     line-height: 1.5em;
