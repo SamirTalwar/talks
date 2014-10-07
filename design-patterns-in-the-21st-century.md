@@ -629,3 +629,30 @@ By decoupling the business domain (in this case, pie eating) from the infrastruc
 {: .notes}
 </div>
 </section>
+
+<section markdown="1">
+## So… what's your point?
+
+<div class="notes" markdown="1">
+We've seen three examples of design patterns that can be drastically improved by approaching them with a functional mindset. Together, these three span the spectrum.
+
+  * The Abstract Factory pattern is an example of a **creational** pattern, which increases flexibility during the application wiring process
+  * The Adapter pattern, a **structural** pattern, is a huge aid in object composition
+  * The Chain of Responsibility pattern is a good demonstration of a **behavioural** *anti-pattern* that actually makes the communication between objects *more* rigid
+
+We took these three patterns, made them a lot smaller, removed a lot of boilerplate, and knocked out a bunch of extra classes we didn't need in the process.
+
+But more than that: we made them functional.
+
+* In all cases, we split things apart, only defining the coupling between them in the way objects were constructed.
+* The difference between domain objects and infrastructural code became much more explicit, and we eradicated infrastructure whenever we could.
+* The Chain of Responsibility became immutable, because we needed to be able to work with it without worrying if it was going to do the same thing every time.
+* And we generalised, using the built-in interfaces to do most of the heavy lifting for us, avoiding declaring lots of infrastructural types and concentrating on our domain.
+
+It's funny, the resulting code was a lot more object-oriented too.
+</div>
+</section>
+
+<section class="slides-only">
+    <h1>Thank you.</h1>
+</section>
