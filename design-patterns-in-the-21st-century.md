@@ -386,4 +386,117 @@ Supplier<Pastry> danishPastryBakery = DanishPastry::new;
 
 Voila. Our interface has gone. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. This is brilliant, but we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
 {: .notes}
+
+That `::` syntax is called a *method reference*, by the way. We'll see more of those in a moment.
+{: .notes}
+</section>
+
+<section markdown="1">
+### The Adapter Pattern
+
+The Adapter pattern bridges worlds. In one world, we have an interface for a concept; in another world, we have a different interface. These two interfaces serve different purposes, but sometimes we need to transfer things across. In a well-written universe, we can use *adapters* to make objects following one protocol adhere to the other.
+{: .notes}
+
+There are two kinds of Adapter pattern. We're not going to talk about this one:
+
+```java
+interface Fire {
+    <T> Burnt<T> burn(T thing);
+}
+
+interface Oven {
+    Food cook(Food food);
+}
+
+class MakeshiftOven extends WoodFire implements Oven {
+    @Override public Food cook(Food food) {
+        Burnt<Food> noms = burn(food);
+        return noms.scrapeOffBurntBits();
+    }
+}
+```
+
+This form, the *class Adapter pattern*, freaks me out, because `extends` gives me the heebie jeebies. *Why* is out of the scope of this essay; feel free to ask me any time and I'll gladly talk your ears (and probably your nose) off about it.
+{: .notes}
+</section>
+
+<section markdown="1">
+Instead, let's talk about the *object Adapter pattern*, which is generally considered far more useful and flexible in all regards.
+
+<div class="fragment" markdown="1">
+Let's take a look at the same class, following this alternative:
+
+```java
+class MakeshiftOven implements Oven {
+    private final Fire fire;
+
+    public MakeshiftOven(Fire fire) {
+        this.fire = fire;
+    }
+
+    @Override public Food cook(Food food) {
+        Burnt<Food> noms = fire.burn(food);
+        return noms.scrapeOffBurntBits();
+    }
+}
+```
+</div>
+
+<div class="fragment" markdown="1">
+And we'd use it like this:
+
+```java
+Oven oven = new MakeshiftOven(fire);
+Food bakedPie = oven.cook(pie);
+```
+</div>
+
+<div class="fragment" markdown="1">
+That's nice, right?
+</div>
+</section>
+
+<section markdown="1">
+Yes. Sort of. We can do better.
+
+We already have a reference to a `Fire`, so constructing another object just to play with it seems a bit… overkill. And that object implements `Oven`. Which has a *single abstract method*. I'm seeing a trend here.
+{: .notes}
+
+Instead, we can make a function that does the same thing.
+{: .notes}
+
+<div class="fragment" markdown="1">
+```java
+Oven oven = food -> fire.burn(food).scrapeOffBurntBits();
+Food bakedPie = oven.cook(pie);
+```
+</div>
+
+<div class="fragment" markdown="1">
+We could go one further and compose method references, but it actually gets worse.
+
+```java
+Function<Food, Burnt<Food>> burn = fire::burn;
+Function<Food, Food> cook = burn.andThen(Burnt::scrapeOffBurntBits);
+Oven oven = cook::apply;
+Food bakedPie = oven.cook(pie);
+```
+
+This is because Java can't convert between functional interfaces implicitly, so we need to give it lots of hints about what each phase of the operation is. Lambdas, on the other hand, are implicitly coercible to any functional interface with the right types, and the compiler does a pretty good job of figuring out how to do it.
+{: .notes}
+</div>
+</section>
+
+<section markdown="1">
+Often, though, all we really need is a method reference.
+
+```java
+Future<Sandwich> sandwichFuture
+    = sudo.makeMeA(Sandwich.class);
+
+Supplier<Sandwich> sandwichSupplier
+    = sandwichFuture::get;
+```
+
+Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. They're just functions.
 </section>
