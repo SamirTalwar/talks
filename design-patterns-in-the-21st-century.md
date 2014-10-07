@@ -500,3 +500,134 @@ Supplier<Sandwich> sandwichSupplier
 
 Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. They're just functions.
 </section>
+
+<section markdown="1">
+### The Chain of Responsibility pattern
+
+Here's a thing you see a lot.
+
+```java
+@Test public void whoAteAllThePies() {
+    PieEater alice = PieEater.withFavourite(Pie.APPLE);
+    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+
+    alice.setNext(bob);
+    bob.setNext(carol);
+
+    assert alice.whoAte(Pie.BLACKBERRY) == bob;
+}
+```
+
+Well, you don't see *that* a lot, but the idea is fairly common.
+
+The Chain of Responsibility pattern is generally considered bad practice now, for many reasons. First of all, there's the copious amount of mutation, then there's the confusion, where you're not sure if you're referring to the first element of the list or all the others. Finally, you have no idea whether anything useful will happen at all—you can fall off the end of the chain.
+{: .notes}
+
+Let's dive a little further into how we can fix this.
+{: .notes}
+</section>
+
+<section markdown="1">
+#### Step 1: Stop mutating.
+
+Instead of setting the next person later, we'll construct each person with the next.
+{: .notes}
+
+```java
+@Test public void whoAteAllThePies() {
+    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY)
+        .withNext(carol);
+    PieEater alice = PieEater.withFavourite(Pie.APPLE)
+        .withNext(bob);
+
+    assert alice.whoAte(Pie.BLACKBERRY) == bob;
+}
+```
+
+That's a little better, but not fantastic.
+{: .notes}
+</section>
+
+<section markdown="1">
+#### Step 2: Separate behaviours.
+
+`PieEater` does two things: delegate to the next person and identify pie. Let's split that up into two different concepts. We'll have a type, `Chain`, which handles what's next.
+{: .notes}
+
+```java
+@Test public void whoAteAllThePies() {
+Chain<PieEater> carol
+    = Chain.finishingWith(PieEater.withFavourite(Pie.CARROT));
+    Chain<PieEater> bob
+        = new Chain<>(PieEater.withFavourite(Pie.BLACKBERRY), carol);
+    Chain<PieEater> alice
+        = new Chain<>(PieEater.withFavourite(Pie.APPLE), bob);
+
+    assert alice.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+}
+```
+
+Note that because the `Chain` doesn't know anything about the object, `PieEater`, during construction, we have to give it more information when we query it so it can do its job.
+{: .notes}
+</section>
+
+<section markdown="1">
+#### Step 3: Split the domain from the infrastructure.
+
+The `Chain` type is now pretty generic, which makes me wary. Let's keep it away from our pie eaters.
+{: .notes}
+
+```java
+@Test public void whoAteAllThePies() {
+    PieEater alice = PieEater.withFavourite(Pie.APPLE);
+    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+
+    Chain<PieEater> pieEaters
+        = new Chain<>(alice, new Chain<>(bob, Chain.finishingWith(carol)));
+
+    assert pieEaters.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+}
+```
+
+OK, they're back in order now. Whew. That was starting to upset me.
+{: .notes}
+</section>
+
+<section markdown="1">
+#### Step 4: Identify reusable code.
+
+That `Chain` type looks awfully familiar at this point.
+
+Perhaps it looks something like this:
+
+```lisp
+cons(alice, cons(bob, cons(carol, nil)))
+```
+
+Oh, look, we're coding LISP.
+
+<div class="fragment" markdown="1">
+Specifically, we're using a construct very similar to LISP's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
+{:.notes}
+
+```java
+@Test public void whoAteAllThePies() {
+    PieEater alice = PieEater.withFavourite(Pie.APPLE);
+    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+
+    Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
+
+    Optional<PieEater> greedyOne
+        = pieEaters.findAny(pieEater -> pieEater.ate(Pie.BLACKBERRY));
+    assert greedyOne.get() == bob;
+}
+```
+
+By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around.
+{: .notes}
+</div>
+</section>

@@ -21,10 +21,12 @@ body {
   font-size: small;
 }
 
-body.essay header { margin-bottom: 2em; }
-body.essay header h1 { margin: 0; border-bottom: 1px solid #ccc; }
-body.essay header h2 { margin: 0; font-size: small; color: #999; }
-h2, h3, h4, h5, h6 { margin: 1em 0; }
+body.essay .document .slides header { margin-bottom: 2em; }
+body.essay .document .slides header h1 { margin: 0; border-bottom: 1px solid #ccc; }
+body.essay .document .slides header h2 { margin: 0; font-size: small; color: #999; }
+.document .slides h2, .document .slides h3, .document .slides h4, .document .slides h5, .document .slides h6 {
+    margin: 1em 0;
+}
 
 p, .document .slides p { margin: 1em 0; }
 
