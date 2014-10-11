@@ -48,6 +48,14 @@ ul, ol {
     max-height: 100%;
 }
 
+footer {
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    font-size: smaller;
+    text-align: center;
+}
+
 /*****************************************************************************/
 /*
 /* Home
@@ -170,7 +178,7 @@ body.essay {
 }
 
 body.essay .slides-only, body.video .slides-only,
-body.presentation .notes,
+body.presentation .notes, body.presentation footer,
 body.essay .video-player, body.presentation .video-player,
 body.video .document .slides > :not(:first-child)
 {
