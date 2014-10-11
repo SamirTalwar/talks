@@ -351,6 +351,8 @@ There are two kinds of Adapter pattern. We're not going to talk about this one:
         Food cook(Food food);
     }
 
+    class WoodFire implements Fire { ... }
+
     class MakeshiftOven extends WoodFire implements Oven {
         @Override public Food cook(Food food) {
             Burnt<Food> noms = burn(food);
@@ -388,20 +390,24 @@ And we'd use it like this:
     Oven oven = new MakeshiftOven(fire);
     Food bakedPie = oven.cook(pie);
 </div>
+</section>
 
-<div class="fragment" markdown="1">
+<section markdown="1">
+The pattern generally follows this simple structure:
+
+**INSERT UML HERE**
+
 That's nice, right?
-</div>
 </section>
 
 <section markdown="1">
 Yes. Sort of. We can do better.
 
+<div class="notes" markdown="1">
 We already have a reference to a `Fire`, so constructing another object just to play with it seems a bit… overkill. And that object implements `Oven`. Which has a *single abstract method*. I'm seeing a trend here.
-{: .notes}
 
 Instead, we can make a function that does the same thing.
-{: .notes}
+</div>
 
 <div class="fragment" markdown="1">
     Oven oven = food -> fire.burn(food).scrapeOffBurntBits();
@@ -410,7 +416,9 @@ Instead, we can make a function that does the same thing.
 
 <div class="fragment" markdown="1">
 We could go one further and compose method references, but it actually gets worse.
+{: .notes}
 
+    // Do *not* do this.
     Function<Food, Burnt<Food>> burn = fire::burn;
     Function<Food, Food> cook = burn.andThen(Burnt::scrapeOffBurntBits);
     Oven oven = cook::apply;
@@ -428,9 +436,21 @@ Often, though, all we really need is a method reference.
         = sudo.makeMeA(Sandwich.class);
 
     Supplier<Sandwich> sandwichSupplier
+        = () -> sandwichFuture.get();
+
+    Supplier<Sandwich> sandwichSupplier
         = sandwichFuture::get;
 
-Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. They're just functions.
+</section>
+
+<section markdown="1">
+Our new UML diagram will look something like this:
+{: .notes}
+
+**INSERT UML HERE**
+
+Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. The concept is still very important; by explicitly creating adapters, we can keep these two worlds separate except at defined boundary points. The implementations, though? They're just functions.
+{:.notes}
 </section>
 
 <section markdown="1">
