@@ -2,6 +2,9 @@
 layout: default
 title: Design Patterns in the 21st Century
 date: 2014-10-15 11:00:00 +0100
+
+code:
+  language: java
 ---
 
 ## Introduction
@@ -13,29 +16,27 @@ date: 2014-10-15 11:00:00 +0100
 This is me.
 {: .notes}
 
-```java
-public final class λs {
-    λ Identity = x -> x;
+    public final class λs {
+        λ Identity = x -> x;
 
-    λ True = x -> y -> x;
-    λ False = x -> y -> y;
+        λ True = x -> y -> x;
+        λ False = x -> y -> y;
 
-    λ Zero = f -> x -> x;
-    λ Succ = n -> f -> x -> f.$(n.$(f).$(x));
-    λ Pred = n -> f -> x ->
-        n.$(g -> h -> h.$(g.$(f))).$(ignored -> x).$(u -> u);
-    λ IsZero = f -> f.$(x -> False).$(True);
+        λ Zero = f -> x -> x;
+        λ Succ = n -> f -> x -> f.$(n.$(f).$(x));
+        λ Pred = n -> f -> x ->
+            n.$(g -> h -> h.$(g.$(f))).$(ignored -> x).$(u -> u);
+        λ IsZero = f -> f.$(x -> False).$(True);
 
-    λ Y = f ->
-        ((λ) (x -> f.$(x.$(x))))
-            .$(x -> f.$(x.$(x)));
-    λ Z = f ->
-        ((λ) (x -> f.$(y -> x.$(x).$(y))))
-            .$(x -> f.$(y -> x.$(x).$(y)));
+        λ Y = f ->
+            ((λ) (x -> f.$(x.$(x))))
+                .$(x -> f.$(x.$(x)));
+        λ Z = f ->
+            ((λ) (x -> f.$(y -> x.$(x).$(y))))
+                .$(x -> f.$(y -> x.$(x).$(y)));
 
-    ...
-}
-```
+        ...
+    }
 {: .lots-of-code}
 
 I do things like that for fun. You can see the full code as part of my [FizzBuzz project](https://github.com/SamirTalwar/FizzBuzz), inspired by Tom Stuart's talk, [Programming with Nothing](http://experthuman.com/programming-with-nothing).
@@ -88,74 +89,60 @@ Functional programming is all about <em><del>functions</del> <ins>values</ins></
 <div class="fragment" markdown="1">
 Values like this:
 
-```java
-int courses = 3;
-```
+    int courses = 3;
 </div>
 
 <div class="fragment" markdown="1">
 But also like this:
 
-```java
-Course dessert = prepareCake.using(eggs, butter, sugar, chocolate);
-```
+    Course dessert = prepareCake.using(eggs, butter, sugar, chocolate);
 </div>
 </section>
 
 <section markdown="1">
 And like this:
 
-```java
-Preparation prepareCake = new Preparation() {
-    @Override
-    public Course using(Ingredient eggs, Ingredient butter, Ingredient sugar, Ingredient special) {
-        return new CakeMix(eggs, butter, sugar).with(special);
+    Preparation prepareCake = new Preparation() {
+        @Override
+        public Course using(Ingredient eggs, Ingredient butter, Ingredient sugar, Ingredient special) {
+            return new CakeMix(eggs, butter, sugar).with(special);
+        }
     }
-}
-```
 
 <div class="fragment" markdown="1">
 Which of course, is the same as this:
 
-```java
-Preparation prepareCake =
-    (eggs, butter, sugar, special)
-        -> new CakeMix(eggs, butter, sugar).with(special);
-```
+    Preparation prepareCake =
+        (eggs, butter, sugar, special)
+            -> new CakeMix(eggs, butter, sugar).with(special);
 </div>
 </section>
 
 <section markdown="1">
 But if we break apart that constructor…
 
-```java
-interface MixPreparation {
-    Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
-}
+    interface MixPreparation {
+        Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
+    }
 
-interface Mix {
-    Course with(Ingredient special);
-}
-```
+    interface Mix {
+        Course with(Ingredient special);
+    }
 
 <div class="fragment" markdown="1">
 We can do something like this:
 
-```java
-MixPreparation prepareCake =
-    (eggs, butter, sugar)
-        -> special
-            -> new CakeMix(eggs, butter, sugar).with(special);
-```
+    MixPreparation prepareCake =
+        (eggs, butter, sugar)
+            -> special
+                -> new CakeMix(eggs, butter, sugar).with(special);
 </div>
 
 <div class="fragment" markdown="1">
 Which is the same as this:
 
-```java
-MixPreparation prepareCake =
-    CakeMix::new;
-```
+    MixPreparation prepareCake =
+        CakeMix::new;
 </div>
 </section>
 
@@ -167,19 +154,15 @@ Yes. It's weird, but it works out.
 
 `CakeMix::new` is a *method reference* to `new CakeMix(…)`. Its type looks like this:
 
-```java
-(Ingredient, Ingredient, Ingredient) -> CakeMix
-```
+    (Ingredient, Ingredient, Ingredient) -> CakeMix
 </div>
 
 <div class="fragment" markdown="1">
 And `MixPreparation` looks like this:
 
-```java
-interface MixPreparation {
-    Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
-}
-```
+    interface MixPreparation {
+        Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
+    }
 </div>
 
 The function is coercible to the type of the *functional interface*, `MixPreparation`. Functionally, they're equivalent, and from version 1.8 and up, the JVM knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
@@ -196,29 +179,25 @@ The function is coercible to the type of the *functional interface*, `MixPrepara
 This pattern is used *everywhere* in Java code, especially in more "enterprisey" code bases. It involves an interface and an implementation. The interface looks something like this:
 {: .notes}
 
-```java
-public interface Bakery {
-    Pastry bakePastry(Topping topping);
-    Cake bakeCake();
-}
-```
+    public interface Bakery {
+        Pastry bakePastry(Topping topping);
+        Cake bakeCake();
+    }
 </section>
 
 <section markdown="1">
 And the implementation:
 {: .notes}
 
-```java
-public class DanishBakery implements Bakery {
-    @Override public Pastry bakePastry(Topping topping) {
-        return new DanishPastry(Topping topping);
-    }
+    public class DanishBakery implements Bakery {
+        @Override public Pastry bakePastry(Topping topping) {
+            return new DanishPastry(Topping topping);
+        }
 
-    @Override public Cake bakeCake() {
-        return new Aeblekage(); // mmmm, apple cake...
+        @Override public Cake bakeCake() {
+            return new Aeblekage(); // mmmm, apple cake...
+        }
     }
-}
-```
 </section>
 
 <section markdown="1">
@@ -240,40 +219,34 @@ Now, that's a fairly general example.
 
 In actual fact, most factories only have one "create" method.
 
-```java
-public interface Bakery {
-    Pastry bakePastry(Topping topping);
-}
-```
+    public interface Bakery {
+        Pastry bakePastry(Topping topping);
+    }
 
 <div class="fragment" markdown="1">
 And often comply with a very generic interface:
 
-```java
-package java.util.function;
+    package java.util.function;
 
-@FunctionalInterface
-public interface Function<T, R> {
-    /**
-     * Applies this function to the given argument.
-     */
-    R apply(T t);
+    @FunctionalInterface
+    public interface Function<T, R> {
+        /**
+         * Applies this function to the given argument.
+         */
+        R apply(T t);
 
-    ...
-}
-```
+        ...
+    }
 
 Hmmm…
 </div>
 
 <div class="fragment" markdown="1">
-```java
-public interface Bakery extends Function<Topping, Pastry> {
-    // this isn't necessary
-    @Override
-    Pastry apply(Topping topping);
-}
-```
+    public interface Bakery extends Function<Topping, Pastry> {
+        // this isn't necessary
+        @Override
+        Pastry apply(Topping topping);
+    }
 </div>
 
 <div class="fragment" markdown="1">
@@ -288,13 +261,11 @@ This denegerate case is pretty common in in the Abstract Factory pattern, as wel
 So how would we implement this pastry maker?
 
 <div class="fragment" markdown="1">
-```java
-public class DanishBakery implements Bakery {
-    @Override public Pastry apply(Topping topping) {
-        return new DanishPastry(Topping topping);
+    public class DanishBakery implements Bakery {
+        @Override public Pastry apply(Topping topping) {
+            return new DanishPastry(Topping topping);
+        }
     }
-}
-```
 
 <div class="notes" markdown="1">
 OK, sure, that was easy. It looks the same as the earlier `DanishBakery` except it can't make cake. Delicious apple cake… what's the point of that?
@@ -306,17 +277,13 @@ Well, if you remember, `Bakery` is now simply a subtype of `Function` which adds
 <div class="fragment" markdown="1">
 So what's the functional equivalent to this?
 
-```java
-Bakery danishBakery = topping -> new DanishPastry(topping);
-```
+    Bakery danishBakery = topping -> new DanishPastry(topping);
 </div>
 
 <div class="fragment" markdown="1">
 Or even:
 
-```java
-Bakery danishBakery = DanishPastry::new;
-```
+    Bakery danishBakery = DanishPastry::new;
 
 Voila. Our `DanishBakery` class has gone.
 
@@ -343,20 +310,18 @@ Not all design patterns in the Gang of Four's book are treated equally by contem
 <div class="fragment" markdown="1">
 Here's my favourite:
 
-```java
-public class DumpingGround {
-    private static DumpingGround instance = null;
+    public class DumpingGround {
+        private static DumpingGround instance = null;
 
-    private DumpingGround() { }
+        private DumpingGround() { }
 
-    public static synchronized DumpingGround getInstance() {
-        if (instance == null) {
-            instance = new DumpingGround();
+        public static synchronized DumpingGround getInstance() {
+            if (instance == null) {
+                instance = new DumpingGround();
+            }
+            return instance;
         }
-        return instance;
     }
-}
-```
 </div>
 
 <div class="fragment" markdown="1">
@@ -378,22 +343,20 @@ The Adapter pattern bridges worlds. In one world, we have an interface for a con
 
 There are two kinds of Adapter pattern. We're not going to talk about this one:
 
-```java
-interface Fire {
-    <T> Burnt<T> burn(T thing);
-}
-
-interface Oven {
-    Food cook(Food food);
-}
-
-class MakeshiftOven extends WoodFire implements Oven {
-    @Override public Food cook(Food food) {
-        Burnt<Food> noms = burn(food);
-        return noms.scrapeOffBurntBits();
+    interface Fire {
+        <T> Burnt<T> burn(T thing);
     }
-}
-```
+
+    interface Oven {
+        Food cook(Food food);
+    }
+
+    class MakeshiftOven extends WoodFire implements Oven {
+        @Override public Food cook(Food food) {
+            Burnt<Food> noms = burn(food);
+            return noms.scrapeOffBurntBits();
+        }
+    }
 
 This form, the *class Adapter pattern*, freaks me out, because `extends` gives me the heebie jeebies. *Why* is out of the scope of this essay; feel free to ask me any time and I'll gladly talk your ears (and probably your nose) off about it.
 {: .notes}
@@ -405,29 +368,25 @@ Instead, let's talk about the *object Adapter pattern*, which is generally consi
 <div class="fragment" markdown="1">
 Let's take a look at the same class, following this alternative:
 
-```java
-class MakeshiftOven implements Oven {
-    private final Fire fire;
+    class MakeshiftOven implements Oven {
+        private final Fire fire;
 
-    public MakeshiftOven(Fire fire) {
-        this.fire = fire;
-    }
+        public MakeshiftOven(Fire fire) {
+            this.fire = fire;
+        }
 
-    @Override public Food cook(Food food) {
-        Burnt<Food> noms = fire.burn(food);
-        return noms.scrapeOffBurntBits();
+        @Override public Food cook(Food food) {
+            Burnt<Food> noms = fire.burn(food);
+            return noms.scrapeOffBurntBits();
+        }
     }
-}
-```
 </div>
 
 <div class="fragment" markdown="1">
 And we'd use it like this:
 
-```java
-Oven oven = new MakeshiftOven(fire);
-Food bakedPie = oven.cook(pie);
-```
+    Oven oven = new MakeshiftOven(fire);
+    Food bakedPie = oven.cook(pie);
 </div>
 
 <div class="fragment" markdown="1">
@@ -445,21 +404,17 @@ Instead, we can make a function that does the same thing.
 {: .notes}
 
 <div class="fragment" markdown="1">
-```java
-Oven oven = food -> fire.burn(food).scrapeOffBurntBits();
-Food bakedPie = oven.cook(pie);
-```
+    Oven oven = food -> fire.burn(food).scrapeOffBurntBits();
+    Food bakedPie = oven.cook(pie);
 </div>
 
 <div class="fragment" markdown="1">
 We could go one further and compose method references, but it actually gets worse.
 
-```java
-Function<Food, Burnt<Food>> burn = fire::burn;
-Function<Food, Food> cook = burn.andThen(Burnt::scrapeOffBurntBits);
-Oven oven = cook::apply;
-Food bakedPie = oven.cook(pie);
-```
+    Function<Food, Burnt<Food>> burn = fire::burn;
+    Function<Food, Food> cook = burn.andThen(Burnt::scrapeOffBurntBits);
+    Oven oven = cook::apply;
+    Food bakedPie = oven.cook(pie);
 
 This is because Java can't convert between functional interfaces implicitly, so we need to give it lots of hints about what each phase of the operation is. Lambdas, on the other hand, are implicitly coercible to any functional interface with the right types, and the compiler does a pretty good job of figuring out how to do it.
 {: .notes}
@@ -469,13 +424,11 @@ This is because Java can't convert between functional interfaces implicitly, so 
 <section markdown="1">
 Often, though, all we really need is a method reference.
 
-```java
-Future<Sandwich> sandwichFuture
-    = sudo.makeMeA(Sandwich.class);
+    Future<Sandwich> sandwichFuture
+        = sudo.makeMeA(Sandwich.class);
 
-Supplier<Sandwich> sandwichSupplier
-    = sandwichFuture::get;
-```
+    Supplier<Sandwich> sandwichSupplier
+        = sandwichFuture::get;
 
 Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. They're just functions.
 </section>
@@ -485,18 +438,16 @@ Java 8 has made adapters so much simpler that I hesitate to call them a pattern 
 
 Here's a thing you see a lot.
 
-```java
-@Test public void whoAteAllThePies() {
-    PieEater alice = PieEater.withFavourite(Pie.APPLE);
-    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+    @Test public void whoAteAllThePies() {
+        PieEater alice = PieEater.withFavourite(Pie.APPLE);
+        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(Pie.CARROT);
 
-    alice.setNext(bob);
-    bob.setNext(carol);
+        alice.setNext(bob);
+        bob.setNext(carol);
 
-    assert alice.whoAte(Pie.BLACKBERRY) == bob;
-}
-```
+        assert alice.whoAte(Pie.BLACKBERRY) == bob;
+    }
 
 Well, you don't see *that* a lot, but the idea is fairly common.
 
@@ -513,17 +464,15 @@ Let's dive a little further into how we can fix this.
 Instead of setting the next person later, we'll construct each person with the next.
 {: .notes}
 
-```java
-@Test public void whoAteAllThePies() {
-    PieEater carol = PieEater.withFavourite(Pie.CARROT);
-    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY)
-        .withNext(carol);
-    PieEater alice = PieEater.withFavourite(Pie.APPLE)
-        .withNext(bob);
+    @Test public void whoAteAllThePies() {
+        PieEater carol = PieEater.withFavourite(Pie.CARROT);
+        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY)
+            .withNext(carol);
+        PieEater alice = PieEater.withFavourite(Pie.APPLE)
+            .withNext(bob);
 
-    assert alice.whoAte(Pie.BLACKBERRY) == bob;
-}
-```
+        assert alice.whoAte(Pie.BLACKBERRY) == bob;
+    }
 
 That's a little better, but not fantastic.
 {: .notes}
@@ -535,18 +484,16 @@ That's a little better, but not fantastic.
 `PieEater` does two things: delegate to the next person and identify pie. Let's split that up into two different concepts. We'll have a type, `Chain`, which handles what's next.
 {: .notes}
 
-```java
-@Test public void whoAteAllThePies() {
-Chain<PieEater> carol
-    = Chain.finishingWith(PieEater.withFavourite(Pie.CARROT));
-    Chain<PieEater> bob
-        = new Chain<>(PieEater.withFavourite(Pie.BLACKBERRY), carol);
-    Chain<PieEater> alice
-        = new Chain<>(PieEater.withFavourite(Pie.APPLE), bob);
+    @Test public void whoAteAllThePies() {
+    Chain<PieEater> carol
+        = Chain.finishingWith(PieEater.withFavourite(Pie.CARROT));
+        Chain<PieEater> bob
+            = new Chain<>(PieEater.withFavourite(Pie.BLACKBERRY), carol);
+        Chain<PieEater> alice
+            = new Chain<>(PieEater.withFavourite(Pie.APPLE), bob);
 
-    assert alice.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
-}
-```
+        assert alice.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+    }
 
 Note that because the `Chain` doesn't know anything about the object, `PieEater`, during construction, we have to give it more information when we query it so it can do its job.
 {: .notes}
@@ -558,18 +505,16 @@ Note that because the `Chain` doesn't know anything about the object, `PieEater`
 The `Chain` type is now pretty generic, which makes me wary. Let's keep it away from our pie eaters.
 {: .notes}
 
-```java
-@Test public void whoAteAllThePies() {
-    PieEater alice = PieEater.withFavourite(Pie.APPLE);
-    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+    @Test public void whoAteAllThePies() {
+        PieEater alice = PieEater.withFavourite(Pie.APPLE);
+        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(Pie.CARROT);
 
-    Chain<PieEater> pieEaters
-        = new Chain<>(alice, new Chain<>(bob, Chain.finishingWith(carol)));
+        Chain<PieEater> pieEaters
+            = new Chain<>(alice, new Chain<>(bob, Chain.finishingWith(carol)));
 
-    assert pieEaters.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
-}
-```
+        assert pieEaters.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+    }
 
 OK, they're back in order now. Whew. That was starting to upset me.
 {: .notes}
@@ -592,19 +537,17 @@ Oh, look, we're coding LISP.
 Specifically, we're using a construct very similar to LISP's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
 {:.notes}
 
-```java
-@Test public void whoAteAllThePies() {
-    PieEater alice = PieEater.withFavourite(Pie.APPLE);
-    PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-    PieEater carol = PieEater.withFavourite(Pie.CARROT);
+    @Test public void whoAteAllThePies() {
+        PieEater alice = PieEater.withFavourite(Pie.APPLE);
+        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(Pie.CARROT);
 
-    Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
+        Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
 
-    Optional<PieEater> greedyOne
-        = pieEaters.findAny(pieEater -> pieEater.ate(Pie.BLACKBERRY));
-    assert greedyOne.get() == bob;
-}
-```
+        Optional<PieEater> greedyOne
+            = pieEaters.findAny(pieEater -> pieEater.ate(Pie.BLACKBERRY));
+        assert greedyOne.get() == bob;
+    }
 
 By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around.
 {: .notes}

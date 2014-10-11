@@ -21,7 +21,7 @@
                 {% endif %}
             </aside>
 
-            <div class="reveal document">
+            <div class="reveal document {% if page.code %}language-{{page.code.language}}{% endif %}">
                 <div class="slides">
                     <section>
                         <header>
