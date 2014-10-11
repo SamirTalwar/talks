@@ -10,7 +10,36 @@ date: 2014-10-15 11:00:00 +0100
 <section markdown="1">
 ### Who are you?
 
-<!-- <script src="https://gist.github.com/SamirTalwar/04cb9dfdaac3ecda97b5.js"></script> -->
+This is me.
+{: .notes}
+
+```java
+public final class λs {
+    λ Identity = x -> x;
+
+    λ True = x -> y -> x;
+    λ False = x -> y -> y;
+
+    λ Zero = f -> x -> x;
+    λ Succ = n -> f -> x -> f.$(n.$(f).$(x));
+    λ Pred = n -> f -> x ->
+        n.$(g -> h -> h.$(g.$(f))).$(ignored -> x).$(u -> u);
+    λ IsZero = f -> f.$(x -> False).$(True);
+
+    λ Y = f ->
+        ((λ) (x -> f.$(x.$(x))))
+            .$(x -> f.$(x.$(x)));
+    λ Z = f ->
+        ((λ) (x -> f.$(y -> x.$(x).$(y))))
+            .$(x -> f.$(y -> x.$(x).$(y)));
+
+    ...
+}
+```
+{: .lots-of-code}
+
+I do things like that for fun. You can see the full code as part of my [FizzBuzz project](https://github.com/SamirTalwar/FizzBuzz), inspired by Tom Stuart's talk, [Programming with Nothing](http://experthuman.com/programming-with-nothing).
+{: .notes}
 </section>
 
 <section markdown="1">
