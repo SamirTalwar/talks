@@ -687,5 +687,5 @@ It's funny, the resulting code was a lot more object-oriented too.
 </section>
 
 <section class="slides-only">
-    <h1>Thank you.</h1>
+## Thank you.
 </section>
