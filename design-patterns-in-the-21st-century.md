@@ -57,14 +57,31 @@ OK, let me rephrase that.
 I want you to stop using design patterns like it's *1999*.
 </section>
 
+<section markdown="1">
+## This is a book.
+
+<p style="text-align: center;"><img src="/assets/images/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
+
+<div class="notes" markdown="1">
+*Design Patterns* was a book written by the "Gang of Four" very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
+
+The originator of the concept (and the term "design pattern") was Christopher Alexander, who wasn't a software developer at all. Alexander was an architect who came up with the idea of rigorously documenting common problems in design with their potential solutions.
+</div>
+
+> The elements of this language are entities called patterns. Each pattern describes a problem that occurs over and over again in our environment, and then describes the core of the solution to that problem, in such a way that you can use this solution a million times over, without ever doing it the same way twice. <cite>— Christopher Alexander</cite>
+
+Alexander, and the Gang of Four after him, did more than just document solutions to common problems in their respective universes. By naming these patterns and providing a good starting point, they hoped to provide a consistent *language*, as well as providing these tools up front so that even novices might benefit from them.
+{: .notes}
+</section>
+
 <section class="slides-only" markdown="1">
-## Let's Talk About Functional Programming
+## And now, an aside, on functional programming.
 
 Functional programming is all about *functions*.
 </section>
 
 <section markdown="1">
-## Let's Talk About Functional Programming
+## And now, an aside, on functional programming.
 
 Functional programming is all about <em><del>functions</del> <ins>values</ins></em>.
 
@@ -89,21 +106,21 @@ Course dessert = prepareCake.using(eggs, butter, sugar, chocolate);
 And like this:
 
 ```java
-Preparation prepareCake =
-    (eggs, butter, sugar, special)
-        -> new CakeMix(eggs, butter, sugar).with(special);
-```
-
-<div class="fragment" markdown="1">
-Which of course, is the same as this:
-
-```java
 Preparation prepareCake = new Preparation() {
     @Override
     public Course using(Ingredient eggs, Ingredient butter, Ingredient sugar, Ingredient special) {
         return new CakeMix(eggs, butter, sugar).with(special);
     }
 }
+```
+
+<div class="fragment" markdown="1">
+Which of course, is the same as this:
+
+```java
+Preparation prepareCake =
+    (eggs, butter, sugar, special)
+        -> new CakeMix(eggs, butter, sugar).with(special);
 ```
 </div>
 </section>
@@ -112,7 +129,7 @@ Preparation prepareCake = new Preparation() {
 But if we break apart that constructor…
 
 ```java
-interface Preparation {
+interface MixPreparation {
     Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
 }
 
@@ -125,7 +142,7 @@ interface Mix {
 We can do something like this:
 
 ```java
-Preparation prepareCake =
+MixPreparation prepareCake =
     (eggs, butter, sugar)
         -> special
             -> new CakeMix(eggs, butter, sugar).with(special);
@@ -136,7 +153,7 @@ Preparation prepareCake =
 Which is the same as this:
 
 ```java
-Preparation prepareCake =
+MixPreparation prepareCake =
     CakeMix::new;
 ```
 </div>
@@ -156,147 +173,21 @@ The type of `CakeMix::new` is this:
 </div>
 
 <div class="fragment" markdown="1">
-And `Preparation` looks like this:
+And `MixPreparation` looks like this:
 
 ```java
-interface Preparation {
+interface MixPreparation {
     Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
 }
 ```
 </div>
 
-The function is coercible to the type of the *functional interface*, `Preparation`. Functionally, they're equivalent, and from version 1.8 and up, the JVM knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
+The function is coercible to the type of the *functional interface*, `MixPreparation`. Functionally, they're equivalent, and from version 1.8 and up, the JVM knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
 {: .notes}
-</section>
-
-<section markdown="1">
-### Functions aren't everything, though.
-
-Take this, for example:
-
-```java
-Preparation prepareSouffle = (eggs, butter, sugar) -> special -> {
-    Recipe recipe = googleSouffleRecipeFor(special).first();
-    return recipe.apply(eggs, butter, sugar, special);
-}
-```
-
-Wait, *Google*?
-
-<div class="notes">
-This is no longer what we can call a **pure** function. It has a *side effect*, namely, that it connects to Google. That's not cool. Sure, it'll do the job… unless the network's down, or Google's down, or we're in China…
-
-And sure, it's <del>a function</del> <ins>an object</ins>, but it's not one I can just pass around anywhere. It might get stored and run later, or run a hundred times, or any number of things that mean that its results are non-deterministic, slow and unreliable.
-
-Which brings us to something called *referential transparency*.
-</div>
-</section>
-
-<section markdown="1">
-### Referential Transparency
-
-Take a function:
-
-```java
-Predicate<Integer> isEven = x -> x % 2 == 0;
-```
-
-<div class="fragment" markdown="1">
-Now apply it to a value:
-
-```java
-assert isEven.test(8);
-assert !isEven.test(17);
-```
-</div>
-
-<div class="fragment" markdown="1">
-Logically, we can replace the function application with the result of the function.
-
-```java
-assert true;
-assert !false;
-```
-</div>
-</section>
-
-<section markdown="1">
-The expression can be said to be *referentially transparent*, because it is completely interchangeable with its value.
-
-<div class="fragment" markdown="1">
-This enables a few things:
-</div>
-
-<ul markdown="1">
-<li class="fragment"><em>Correctness.</em> <span class="notes">We can easily verify, through automated testing or formal methods, that the function does as expected.</span></li>
-<li class="fragment"><em>Simplification.</em> <span class="notes" markdown="1">When a function always has the same output for a given input, we can often use this knowledge to simplify our code, just like we did with the `CakeMix` above.</span></li>
-<li class="fragment"><em>Optimization.</em> <span class="notes" markdown="1">This can take many forms, but most often the real wins are from [memoisation](http://en.wikipedia.org/wiki/Memoization), [lazy evaluation](http://en.wikipedia.org/wiki/Lazy_evaluation) and [parallelisation](http://en.wikipedia.org/wiki/Parallelization).</span></li>
-</ul>
-</section>
-
-<section markdown="1">
-### Immutability
-
-In order for a function to be *pure*, like the one above, it has to follow one golden rule:
-
-*For any given input, the function must always yield the same output.*
-
-This sounds fairly simple, but lots of things can affect this. Any I/O operation at all means that can't happen. Even if you *know* that file's always there, you can still get an `IOException` for so many reasons, including low disk space, network connectivity problems, flaky USB drivers… the list is endless.
-{: .notes}
-
-In fact, the function can't deal with any outside state at all. It must have *no side effects*. That means no mutation of external variables or other state. Many functional languages don't allow *any* mutation at all in pure functions.
-{: .notes}
-</section>
-
-<section markdown="1">
-All this means that life will be much easier if we stop mutating values.
-
-<div class="fragment" markdown="1">
-Instead of:
-
-```java
-void withExtras(List<Thing> things) {
-    things.add(extra);
-}
-```
-</div>
-
-<div class="fragment" markdown="1">
-Why not:
-
-```java
-PList<Thing> withExtras(PList<Thing> things) {
-    return things.plus(extra);
-}
-```
-</div>
-
-<div class="fragment" markdown="1">
-We can call that second one as many times as we like.<br/>Same input, same output.
-</div>
 </section>
 
 <section markdown="1">
 ## On to the Good Stuff
-</section>
-
-<section markdown="1">
-### What is a Design Pattern, anyway?
-
-*Design Patterns* was a book written by the "Gang of Four" very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
-{: .notes}
-
-<p style="text-align: center;"><img src="/assets/images/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
-
-By naming these patterns and providing a good starting point, they hoped to provide a consistent *language* for developers, as well as providing these tools up front.
-{: .notes}
-</section>
-
-<section markdown="1">
-The originator of the concept was the architect Christopher Alexander.
-{: .notes}
-
-> The elements of this language are entities called patterns. Each pattern describes a problem that occurs over and over again in our environment, and then describes the core of the solution to that problem, in such a way that you can use this solution a million times over, without ever doing it the same way twice. <cite>— Christopher Alexander</cite>
 </section>
 
 <section markdown="1">
