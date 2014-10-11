@@ -456,25 +456,97 @@ Java 8 has made adapters so much simpler that I hesitate to call them a pattern 
 <section markdown="1">
 ### The Chain of Responsibility pattern
 
-Here's a thing you see a lot.
+Here's a thing you might not see a lot.
 
-    @Test public void whoAteAllThePies() {
-        PieEater alice = PieEater.withFavourite(Pie.APPLE);
-        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(Pie.CARROT);
+    @Test public void whoAteMyPie() {
+        PieEater alice = PieEater.withFavourite(APPLE);
+        PieEater bob = PieEater.withFavourite(BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(CARROT);
 
         alice.setNext(bob);
         bob.setNext(carol);
 
-        assert alice.whoAte(Pie.BLACKBERRY) == bob;
+        assertThat(alice.whoAte(BLACKBERRY), is(bob));
     }
 
-Well, you don't see *that* a lot, but the idea is fairly common.
+It might look odd, but the idea is fairly common.
+</section>
 
-The Chain of Responsibility pattern is generally considered bad practice now, for many reasons. First of all, there's the copious amount of mutation, then there's the confusion, where you're not sure if you're referring to the first element of the list or all the others. Finally, you have no idea whether anything useful will happen at all—you can fall off the end of the chain.
+<section markdown="1">
+For example, a Java logging framework might construct a chain of loggers:
+
+    private static Logger createChain() {
+        Logger stdoutLogger = new StdoutLogger(LogLevel.DEBUG);
+
+        Logger emailLogger = new EmailLogger(LogLevel.NOTICE);
+        stdoutLogger.setNext(emailLogger);
+
+        Logger stderrLogger = new StderrLogger(LogLevel.ERR);
+        emailLogger.setNext(stderrLogger);
+
+        return stdoutLogger;
+    }
+</section>
+
+<section markdown="1">
+Or a website might use a chain of handlers to handle an HTTP request:
+
+    private static Handler createHandler() {
+        Handler homePageHandler
+            = new PageHandler("/", request -> serveHomePage(request));
+        Handler aboutPageHandler
+            = new PageHandler("/about", request -> serveAboutPage(request));
+        Handler staticAssetsHandler
+            = new StaticResourceHandler("/assets", Paths.get("/assets"));
+        Handler notFoundHandler = new NotFoundHandler();
+
+        homePageHandler.setNext(aboutPageHandler);
+        aboutPageHandler.setNext(staticAssetsHandler);
+        staticAssetsHandler.setNext(notFoundHandler);
+
+        return homePageHandler;
+    }
+</section>
+
+<section markdown="1">
+In UML, it looks a little like this:
 {: .notes}
 
-Let's dive a little further into how we can fix this.
+**INSERT UML HERE**
+</section>
+
+<section markdown="1">
+#### This is probably bad practice.
+
+The Chain of Responsibility pattern is generally considered an *anti-pattern* now, for many reasons.
+
+<ul>
+  <li class="fragment"><span class="notes">First of all, there's the </span>copious amount of mutation<span class="notes">,</span></li>
+  <li class="fragment"><span class="notes">then there's the </span>confusion… is it one thing or everything?</li>
+  <li class="fragment"><span class="notes">Not to mention, </span>the order of operations is incredibly easy to get wrong,</li>
+  <li class="fragment"><span class="notes">and finally, </span>you have no idea whether anything useful will happen at all<span class="notes">, as you can fall right off the end of the chain.</span></li>
+</ul>
+{: .notes}
+
+Let's dive a little further into how we can salvage something from all of this.
+{: .notes}
+</section>
+
+<section markdown="1">
+Remember our pie eaters?
+
+    @Test public void whoAteMyPie() {
+        PieEater alice = PieEater.withFavourite(APPLE);
+        PieEater bob = PieEater.withFavourite(BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(CARROT);
+
+        alice.setNext(bob);
+        bob.setNext(carol);
+
+        assertThat(alice.whoAte(BLACKBERRY), is(bob));
+    }
+
+That assertion is using [Hamcrest matchers](https://code.google.com/p/hamcrest/wiki/Tutorial#Sugar), by the way. Check them out if you're not too familiar with them. They're amazing.
 {: .notes}
 </section>
 
@@ -484,17 +556,18 @@ Let's dive a little further into how we can fix this.
 Instead of setting the next person later, we'll construct each person with the next.
 {: .notes}
 
-    @Test public void whoAteAllThePies() {
-        PieEater carol = PieEater.withFavourite(Pie.CARROT);
-        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY)
-            .withNext(carol);
-        PieEater alice = PieEater.withFavourite(Pie.APPLE)
-            .withNext(bob);
+    @Test public void whoAteMyPie() {
+        PieEater carol = PieEater.atTheEnd()
+            .withFavourite(CARROT);
+        PieEater bob = PieEater.before(carol)
+            .withFavourite(BLACKBERRY);
+        PieEater alice = PieEater.before(bob)
+            .withFavourite(APPLE);
 
-        assert alice.whoAte(Pie.BLACKBERRY) == bob;
+        assertThat(alice.whoAte(BLACKBERRY), is(bob));
     }
 
-That's a little better, but not fantastic.
+This hasn't changed much, unfortunately. It's still very confusing why Alice would know the answer to the question, and we could still get things in the wrong order or ask the wrong person. Asking Carol would probably lead a complete dead end.
 {: .notes}
 </section>
 
@@ -504,36 +577,45 @@ That's a little better, but not fantastic.
 `PieEater` does two things: delegate to the next person and identify pie. Let's split that up into two different concepts. We'll have a type, `Chain`, which handles what's next.
 {: .notes}
 
-    @Test public void whoAteAllThePies() {
-    Chain<PieEater> carol
-        = Chain.finishingWith(PieEater.withFavourite(Pie.CARROT));
+    @Test public void whoAteMyPie() {
+        Chain<PieEater> carol
+            = Chain.endingWith(PieEater.withFavourite(CARROT));
         Chain<PieEater> bob
-            = new Chain<>(PieEater.withFavourite(Pie.BLACKBERRY), carol);
+            = Chain.from(PieEater.withFavourite(BLACKBERRY)).to(carol);
         Chain<PieEater> alice
-            = new Chain<>(PieEater.withFavourite(Pie.APPLE), bob);
+            = Chain.from(PieEater.withFavourite(APPLE)).to(bob);
 
-        assert alice.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+        assertThat(alice.find(pieEater -> pieEater.ate(BLACKBERRY)),
+                   is(bob));
     }
 
-Note that because the `Chain` doesn't know anything about the object, `PieEater`, during construction, we have to give it more information when we query it so it can do its job.
-{: .notes}
+<div class="notes" markdown="1">
+Note that `Chain` is generic by nature, and so doesn't  know anything about the object, `PieEater`. This means that when we ask it a question, we have to give it more information on its contents so it can do its job. We do this by providing a lambda to the `find` method which tells it *how* to find the culprit. In essence, instead of the behaviour being *baked in* (pun totally intended) to the `PieEater` or `Chain` types, we extract it out.
+
+We now have three distinct concepts here:
+
+  * The pie eater, who eats pies,
+  * the `Chain`, which is a piece of infrastructure that lets us find things, and
+  * the operation passed to `find`, described in terms of the `ate` method.
+</div>
 </section>
 
 <section markdown="1">
 #### Step 3: Split the domain from the infrastructure.
 
-The `Chain` type is now pretty generic, which makes me wary. Let's keep it away from our pie eaters.
+The `Chain` type is now pretty generic, and so can be detached entirely from our domain objects. Let's keep it away from our pie eaters.
 {: .notes}
 
     @Test public void whoAteAllThePies() {
-        PieEater alice = PieEater.withFavourite(Pie.APPLE);
-        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(Pie.CARROT);
+        PieEater alice = PieEater.withFavourite(APPLE);
+        PieEater bob = PieEater.withFavourite(BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(CARROT);
 
         Chain<PieEater> pieEaters
-            = new Chain<>(alice, new Chain<>(bob, Chain.finishingWith(carol)));
+            = Chain.from(alice).to(Chain.from(bob).to(Chain.endingWith(carol)));
 
-        assert pieEaters.find(pieEater -> pieEater.ate(Pie.BLACKBERRY)) == bob;
+        assertThat(alice.find(pieEater -> pieEater.ate(BLACKBERRY)),
+                   is(bob));
     }
 
 OK, they're back in order now. Whew. That was starting to upset me.
@@ -541,37 +623,45 @@ OK, they're back in order now. Whew. That was starting to upset me.
 </section>
 
 <section markdown="1">
-#### Step 4: Identify reusable code.
+#### Step 4: Identify reusable infrastructure.
 
 That `Chain` type looks awfully familiar at this point.
 
 Perhaps it looks something like this:
 
-```lisp
-cons(alice, cons(bob, cons(carol, nil)))
-```
+    cons(alice, cons(bob, cons(carol, nil)))
 
-Oh, look, we're coding LISP.
+Oh, look, [we're coding Lisp](http://en.wikipedia.org/wiki/Cons).
 
 <div class="fragment" markdown="1">
-Specifically, we're using a construct very similar to LISP's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
+Specifically, we're using a construct very similar to Lisp's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
 {:.notes}
 
     @Test public void whoAteAllThePies() {
-        PieEater alice = PieEater.withFavourite(Pie.APPLE);
-        PieEater bob = PieEater.withFavourite(Pie.BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(Pie.CARROT);
+        PieEater alice = PieEater.withFavourite(APPLE);
+        PieEater bob = PieEater.withFavourite(BLACKBERRY);
+        PieEater carol = PieEater.withFavourite(CARROT);
 
         Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
 
         Optional<PieEater> greedyOne
-            = pieEaters.findAny(pieEater -> pieEater.ate(Pie.BLACKBERRY));
+            = pieEaters.findAny(pieEater -> pieEater.ate(BLACKBERRY));
         assert greedyOne.get() == bob;
     }
 
-By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around.
+A [`Stream`](http://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html), in Java 8, is a single-use sequence of elements supporting aggregate operations. In this case, we're only using one of its operations, `findAny`, but it has many more capabilities. It's *not* a list, but in our case, we can construct it from a list and then use it to discover information about it.
 {: .notes}
 </div>
+</section>
+
+<section markdown="1">
+Our new structure is quite different—far more so than the earlier examples.
+{: .notes}
+
+**INSERT UML HERE**
+
+By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list of elements), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around in the form of a lambda expression.
+{: .notes}
 </section>
 
 <section markdown="1">
@@ -590,7 +680,6 @@ But more than that: we made them functional.
 
 * In all cases, we split things apart, only defining the coupling between them in the way objects were constructed.
 * The difference between domain objects and infrastructural code became much more explicit, and we eradicated infrastructure whenever we could.
-* The Chain of Responsibility became immutable, because we needed to be able to work with it without worrying if it was going to do the same thing every time.
 * And we generalised, using the built-in interfaces to do most of the heavy lifting for us, avoiding declaring lots of infrastructural types and concentrating on our domain.
 
 It's funny, the resulting code was a lot more object-oriented too.
