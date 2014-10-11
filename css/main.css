@@ -43,7 +43,7 @@ ul, ol {
     padding-right: 0;
 }
 
-.presentation img {
+img {
     max-width: 100%;
     max-height: 100%;
 }
@@ -189,6 +189,12 @@ body.video .document .slides > :not(:first-child)
     margin: 1em auto !important;
 }
 
+.document cite {
+    display: block;
+    text-align: right;
+    font-style: italic;
+}
+
 .document blockquote {
     padding: 10px 40px;
     background: #eee;
@@ -197,11 +203,6 @@ body.video .document .slides > :not(:first-child)
 .document blockquote.shakespeare {
     font-family: 'kingthings_calligraphica_liLt';
     font-size: 1.5em;
-}
-
-.document blockquote cite {
-    display: block;
-    text-align: right;
 }
 
 .document section .byte-array {
@@ -243,6 +244,20 @@ a.action {
 a.action:hover {
     cursor: pointer;
     color: #69f;
+}
+
+.presentation .image {
+    text-align: center;
+}
+
+.presentation .reveal .slides .image img {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+}
+
+.presentation .reveal .slides cite {
+    font-size: 0.5em;
 }
 
 .video-player {

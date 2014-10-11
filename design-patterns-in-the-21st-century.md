@@ -60,7 +60,7 @@ I want you to stop using design patterns like it's *1999*.
 <section markdown="1">
 ## This is a book.
 
-<p style="text-align: center;"><img src="/assets/images/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
+<p style="text-align: center;"><img src="assets/images/design-patterns-in-the-21st-century/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
 
 <div class="notes" markdown="1">
 *Design Patterns* was a book written by the "Gang of Four" very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
@@ -165,7 +165,7 @@ MixPreparation prepareCake =
 <div class="fragment" markdown="1">
 Yes. It's weird, but it works out.
 
-The type of `CakeMix::new` is this:
+`CakeMix::new` is a *method reference* to `new CakeMix(…)`. Its type looks like this:
 
 ```java
 (Ingredient, Ingredient, Ingredient) -> CakeMix
@@ -193,33 +193,56 @@ The function is coercible to the type of the *functional interface*, `MixPrepara
 <section markdown="1">
 ### The Abstract Factory Pattern
 
-This pattern is used *everywhere* in Java code, especially in more "enterprisey" code bases. It looks something like this:
+This pattern is used *everywhere* in Java code, especially in more "enterprisey" code bases. It involves an interface and an implementation. The interface looks something like this:
+{: .notes}
 
 ```java
 public interface Bakery {
-    Pastry bakePastry();
+    Pastry bakePastry(Topping topping);
     Cake bakeCake();
 }
+```
+</section>
 
-public class DanishBakery {
-    @Override public Pastry bakePastry() {
-        return new DanishPastry();
+<section markdown="1">
+And the implementation:
+{: .notes}
+
+```java
+public class DanishBakery implements Bakery {
+    @Override public Pastry bakePastry(Topping topping) {
+        return new DanishPastry(Topping topping);
     }
 
     @Override public Cake bakeCake() {
-        return new Aeblekage();
+        return new Aeblekage(); // mmmm, apple cake...
     }
 }
 ```
 </section>
 
 <section markdown="1">
-That's a fairly general example. In actual fact, most factories only have one "create" method.
+More generally, the Abstract Factory pattern is usually implemented according to this structure.
+{: .notes}
+
+![Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml.svg)
+{: .image}
+
+<cite markdown="1">[By Giacomo Ritucci, licensed under CC-BY-SA-3.0, via Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Abstract_factory_UML.svg)</cite>
+
+In this example, `Pastry` and `Cake` are "abstract products", and `Bakery` is an "abstract factory". Their implementations are the concrete variants.
+{: .notes}
+</section>
+
+<section markdown="1">
+Now, that's a fairly general example.
+{: .notes}
+
+In actual fact, most factories only have one "create" method.
 
 ```java
-public interface Bakery extends Supplier<Pastry> {
-    @Override
-    Pastry get();
+public interface Bakery {
+    Pastry bakePastry(Topping topping);
 }
 ```
 
@@ -230,47 +253,85 @@ And often comply with a very generic interface:
 package java.util.function;
 
 @FunctionalInterface
-public interface Supplier<T> {
+public interface Function<T, R> {
     /**
-     * Gets a result.
-     *
-     * @return a result
+     * Applies this function to the given argument.
      */
-    T get();
+    R apply(T t);
+
+    ...
+}
+```
+
+Hmmm…
+</div>
+
+<div class="fragment" markdown="1">
+```java
+public interface Bakery extends Function<Topping, Pastry> {
+    // this isn't necessary
+    @Override
+    Pastry apply(Topping topping);
 }
 ```
 </div>
 
 <div class="fragment" markdown="1">
-Oh look, a function.
-</div>
+Oh look, it's a function.
 
 This denegerate case is pretty common in in the Abstract Factory pattern, as well as many others. While most of them provide for lots of discrete pieces of functionality, and so have lots of methods, we often tend to break them up into single-method types, either for flexibility or because we just don't need more than one thing at a time.
 {: .notes}
+</div>
 </section>
 
 <section markdown="1">
+So how would we implement this pastry maker?
+
+<div class="fragment" markdown="1">
+```java
+public class DanishBakery implements Bakery {
+    @Override public Pastry apply(Topping topping) {
+        return new DanishPastry(Topping topping);
+    }
+}
+```
+
+<div class="notes" markdown="1">
+OK, sure, that was easy. It looks the same as the earlier `DanishBakery` except it can't make cake. Delicious apple cake… what's the point of that?
+
+Well, if you remember, `Bakery` is now simply a subtype of `Function` which adds no further behaviour, which means it has a **Single Abstract Method**. This means it's a **Functional Interface**.
+</div>
+</div>
+
+<div class="fragment" markdown="1">
 So what's the functional equivalent to this?
 
-<div class="fragment" markdown="1">
 ```java
-Bakery danishPastryBakery = () -> new DanishPastry();
+Bakery danishBakery = topping -> new DanishPastry(topping);
 ```
 </div>
 
 <div class="fragment" markdown="1">
-Or simply:
+Or even:
 
 ```java
-Supplier<Pastry> danishPastryBakery = DanishPastry::new;
+Bakery danishBakery = DanishPastry::new;
 ```
+
+Voila. Our `DanishBakery` class has gone.
+
+We could even get rid of the `Bakery` interface here and just use `Function<Topping, Pastry>` instead. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. This is brilliant, but on these occasions, we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
+{: .notes}
 </div>
+</section>
 
-Voila. Our interface has gone. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. This is brilliant, but we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
-{: .notes}
+<section markdown="1">
+Here's our updated UML diagram:
 
-That `::` syntax is called a *method reference*, by the way. We'll see more of those in a moment.
-{: .notes}
+![Updated Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml-functional.svg)
+{: .image}
+
+Aaaaaah. Much better.
 </section>
 
 <section markdown="1">
