@@ -191,42 +191,6 @@ The function is coercible to the type of the *functional interface*, `MixPrepara
 </section>
 
 <section markdown="1">
-### Bad Design Patterns
-
-Not all design patterns in the Gang of Four's book are treated equally by contemporary programmers. A number of them are seen as examples of bad design.
-{: .notes}
-
-<div class="fragment" markdown="1">
-Here's my favourite:
-
-```java
-public class DumpingGround {
-    private static DumpingGround instance = null;
-
-    private DumpingGround() { }
-
-    public static synchronized DumpingGround getInstance() {
-        if (instance == null) {
-            instance = new DumpingGround();
-        }
-        return instance;
-    }
-}
-```
-</div>
-
-<div class="fragment" markdown="1">
-Ew.
-</div>
-
-There's so much wrong with that code. This is an example of the *singleton pattern*, which is an idiom for sharing an object throughout your codebase with minimum effort. Assuming you want to write code that is unmaintainable. Singleton objects are pervasive—they get everywhere—and so your design becomes incredibly coupled to this one object. That means that replacing it, changing it or reworking it is practically impossible. It also makes it very hard to test your code, as the singleton has state, and so it, and everything that depends on it, becomes referentially opaque.
-{: .notes}
-
-There are more bad design patterns, which I will not dwell on further. Let's take a look at one I quite like.
-{: .notes}
-</section>
-
-<section markdown="1">
 ### The Abstract Factory Pattern
 
 This pattern is used *everywhere* in Java code, especially in more "enterprisey" code bases. It looks something like this:
@@ -306,6 +270,42 @@ Voila. Our interface has gone. In this case, we might want to keep it, as it has
 {: .notes}
 
 That `::` syntax is called a *method reference*, by the way. We'll see more of those in a moment.
+{: .notes}
+</section>
+
+<section markdown="1">
+### An aside: Bad Design Patterns
+
+Not all design patterns in the Gang of Four's book are treated equally by contemporary programmers. A number of them are seen as examples of bad design.
+{: .notes}
+
+<div class="fragment" markdown="1">
+Here's my favourite:
+
+```java
+public class DumpingGround {
+    private static DumpingGround instance = null;
+
+    private DumpingGround() { }
+
+    public static synchronized DumpingGround getInstance() {
+        if (instance == null) {
+            instance = new DumpingGround();
+        }
+        return instance;
+    }
+}
+```
+</div>
+
+<div class="fragment" markdown="1">
+Ew.
+</div>
+
+There's so much wrong with that code. This is an example of the *singleton pattern*, which is an idiom for sharing an object throughout your codebase with minimum effort. Assuming you want to write code that is unmaintainable. Singleton objects are pervasive—they get everywhere—and so your design becomes incredibly coupled to this one object. That means that replacing it, changing it or reworking it is practically impossible. It also makes it very hard to test your code, as the singleton has state, and so anything that uses it becomes completely interdependent with everything else.
+{: .notes}
+
+There are more bad design patterns, which I will not dwell upon further. I simply bring this one up to demonstrate that not all are worth rescuing. Now, let's take a look at one I quite like instead.
 {: .notes}
 </section>
 
