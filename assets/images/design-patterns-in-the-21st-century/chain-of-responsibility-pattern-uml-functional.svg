@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="662"
+   height="332"
+   id="svg4122"
+   version="1.1"
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="New document 2">
+  <defs
+     id="defs4124" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="331"
+     inkscape:cy="166"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="40"
+     fit-margin-left="40"
+     fit-margin-right="40"
+     fit-margin-bottom="40"
+     inkscape:window-width="1619"
+     inkscape:window-height="1006"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata4127">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-44,-366.36218)">
+    <g
+       id="g606"
+       transform="translate(85,482.36218)">
+      <g
+         id="g608">
+        <g
+           id="g610"
+           transform="scale(1,0.75)">
+          <g
+             id="g612">
+            <path
+               style="fill:#ffffff;stroke:none"
+               inkscape:connector-curvature="0"
+               id="path614"
+               d="m 100,50 a 50,50 0 1 0 -2.5e-5,0.05 z" />
+            <g
+               id="g616"
+               transform="scale(1,1.3333333)">
+              <path
+                 style="fill:none;stroke:#333333;stroke-width:2;stroke-miterlimit:10"
+                 inkscape:connector-curvature="0"
+                 id="path618"
+                 stroke-miterlimit="10"
+                 d="m 50,0 m 0,0 C 77.614235,0 100,16.789324 100,37.5 100,58.210676 77.614235,75 50,75 22.385765,75 0,58.210676 0,37.5 0,16.789324 22.385765,0 50,0 z" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g620"
+       transform="translate(95,508.36218)">
+      <text
+         style="font-size:20px;font-style:normal;font-weight:normal;text-decoration:none;fill:#000000;stroke:none;font-family:Arial"
+         id="text622"
+         y="20"
+         x="14.433332"
+         text-decoration="none"
+         font-weight="normal"
+         font-style="normal"
+         font-size="20px">Client</text>
+    </g>
+    <g
+       id="g624"
+       transform="translate(245,582.36218)">
+      <g
+         id="g626">
+        <g
+           id="g628"
+           transform="scale(1,0.75)">
+          <g
+             id="g630">
+            <path
+               style="fill:#b6d7a8;stroke:none"
+               inkscape:connector-curvature="0"
+               id="path632"
+               d="m 0,0 100,0 q 0,0 0,0 l 0,100 q 0,0 0,0 L 0,100 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            <g
+               id="g634"
+               transform="scale(1,1.3333333)">
+              <path
+                 style="fill:none;stroke:none"
+                 inkscape:connector-curvature="0"
+                 id="path636"
+                 d="m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+              <path
+                 style="fill:none;stroke:#333333;stroke-width:2;stroke-miterlimit:10"
+                 inkscape:connector-curvature="0"
+                 id="path638"
+                 stroke-miterlimit="10"
+                 d="m 0,0 m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g640"
+       transform="translate(255,608.36218)">
+      <text
+         style="font-size:20px;font-style:normal;font-weight:normal;text-decoration:none;fill:#000000;stroke:none;font-family:Arial"
+         id="text642"
+         y="20"
+         x="1.6333351"
+         text-decoration="none"
+         font-weight="normal"
+         font-style="normal"
+         font-size="20px">Object A</text>
+    </g>
+    <g
+       id="g644"
+       transform="translate(405,582.36218)">
+      <g
+         id="g646">
+        <g
+           id="g648"
+           transform="scale(1,0.75)">
+          <g
+             id="g650">
+            <path
+               style="fill:#b6d7a8;stroke:none"
+               inkscape:connector-curvature="0"
+               id="path652"
+               d="m 0,0 100,0 q 0,0 0,0 l 0,100 q 0,0 0,0 L 0,100 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            <g
+               id="g654"
+               transform="scale(1,1.3333333)">
+              <path
+                 style="fill:none;stroke:none"
+                 inkscape:connector-curvature="0"
+                 id="path656"
+                 d="m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+              <path
+                 style="fill:none;stroke:#333333;stroke-width:2;stroke-miterlimit:10"
+                 inkscape:connector-curvature="0"
+                 id="path658"
+                 stroke-miterlimit="10"
+                 d="m 0,0 m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g660"
+       transform="translate(415,608.36218)">
+      <text
+         style="font-size:20px;font-style:normal;font-weight:normal;text-decoration:none;fill:#000000;stroke:none;font-family:Arial"
+         id="text662"
+         y="20"
+         x="1.6333351"
+         text-decoration="none"
+         font-weight="normal"
+         font-style="normal"
+         font-size="20px">Object B</text>
+    </g>
+    <g
+       id="g664"
+       transform="translate(565,582.36218)">
+      <g
+         id="g666">
+        <g
+           id="g668"
+           transform="scale(1,0.75)">
+          <g
+             id="g670">
+            <path
+               style="fill:#b6d7a8;stroke:none"
+               inkscape:connector-curvature="0"
+               id="path672"
+               d="m 0,0 100,0 q 0,0 0,0 l 0,100 q 0,0 0,0 L 0,100 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            <g
+               id="g674"
+               transform="scale(1,1.3333333)">
+              <path
+                 style="fill:none;stroke:none"
+                 inkscape:connector-curvature="0"
+                 id="path676"
+                 d="m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+              <path
+                 style="fill:none;stroke:#333333;stroke-width:2;stroke-miterlimit:10"
+                 inkscape:connector-curvature="0"
+                 id="path678"
+                 stroke-miterlimit="10"
+                 d="m 0,0 m 0,0 100,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g680"
+       transform="translate(575,608.36218)">
+      <text
+         style="font-size:20px;font-style:normal;font-weight:normal;text-decoration:none;fill:#000000;stroke:none;font-family:Arial"
+         id="text682"
+         y="20"
+         x="1.0833321"
+         text-decoration="none"
+         font-weight="normal"
+         font-style="normal"
+         font-size="20px">Object C</text>
+    </g>
+    <g
+       id="g684"
+       transform="translate(385,407.36218)">
+      <g
+         id="g686">
+        <g
+           id="g688"
+           transform="scale(1.4,0.75)">
+          <g
+             id="g690">
+            <path
+               style="fill:#ffe599;stroke:none"
+               inkscape:connector-curvature="0"
+               id="path692"
+               d="m 0,0 100,0 q 0,0 0,0 l 0,100 q 0,0 0,0 L 0,100 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            <g
+               id="g694"
+               transform="scale(0.71428571,1.3333333)">
+              <path
+                 style="fill:none;stroke:none"
+                 inkscape:connector-curvature="0"
+                 id="path696"
+                 d="m 0,0 140,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+              <path
+                 style="fill:none;stroke:#333333;stroke-width:2;stroke-miterlimit:10"
+                 inkscape:connector-curvature="0"
+                 id="path698"
+                 stroke-miterlimit="10"
+                 d="m 0,0 m 0,0 140,0 q 0,0 0,0 l 0,75 q 0,0 0,0 L 0,75 q 0,0 0,0 L 0,0 q 0,0 0,0 z" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g700"
+       transform="translate(395.8,433.36218)">
+      <text
+         style="font-size:20px;font-style:normal;font-weight:normal;text-decoration:none;fill:#000000;stroke:none;font-family:Arial"
+         id="text702"
+         y="20"
+         x="15.816665"
+         text-decoration="none"
+         font-weight="normal"
+         font-style="normal"
+         font-size="20px">Container</text>
+    </g>
+    <g
+       id="g704"
+       transform="translate(265,477.86218)">
+      <image
+         id="image706"
+         xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAACGCAYAAAC8E0pCAAACtUlEQVR4nO3dPYuUZwCF4TMBGyHRUquQtIFo6w9QtBKSSpI2EHtFjIqW9gpuaWlrpaaJ/8DeJK1NwI8mnW6KZ15W8LtYn7OZ64IHFnYXDuw97Mw7MG8CAACwt11Ncm32CHjdqyTbSVazh8BClNQRJXVESR1RUkeU1BEldURJHVFSR5TUESV1REkdUVJHlNQRJXVESR1RUkeU1BEldURJHVFSR5TUESV1REkdUVJHlNQRJXVESR1RUkeU1BEldURJHVFSR5TUESV1REkdUVJHlNQRJVVWGUG+mj0EFgcyonw2ewgsvsmI8u/ZQ2DxQ0aU92cPgcWNjCgvzR4CSfJlkucZUR6ZvAWSJLcygvx99hBYJbmcEeS/SY7OncMmWyU5nuSPjCBfJvl56qJPcCjJ6SS/JLmQcYNyZ2+e60m2ktxL8jQjxu0k/yQ5kXJfJTmX5HF2hjv/v/M4yfn137va8YxHzjL8acYjayvjkXbN2bPnQsZ/vNNJDmeP+CnjucV2xnONE/HGPBMdyXj1tZ3kSsRIgQcZQW7NHgJJ8n1GkC8yruzDdL9lRHlz9hBY3MuI8sfZQ2DxV0aU384eAovl6v7B2UNgsVyb/GL2EFgs795ADVFSR5TUESV1REkdUVJHlNQRJXVESR1RUkeU1BEldURJHVFSR5TUESV1REkdUVJHlNQRJXVESR1RUkeU1BEldURJHVEyxSrjA1HvvOUsUb7te1vxqb7soov59DsIXJyylI2xP8mTfHyQT9a/A7vqbD4+yl8nbWTD7MvOh6S+7/y5/ln4LM7kw1GembaOjbRK8ijvDvJRvOJmglN5d5QnJ+5iwz3Mm0E+nLgHcixvRnls6iJIcjc7Qd6dvAWSJN9l3B3i5fprqHB7faDG1+sDAAAAAAAAAAAAAAAAAAAAAAAAsLv+A/9tAT+ugB7BAAAAAElFTkSuQmCC"
+         preserveAspectRatio="none"
+         height="134"
+         width="165" />
+    </g>
+    <g
+       id="g708"
+       transform="translate(425,477.86218)">
+      <image
+         id="image710"
+         xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAACGCAYAAACBrelhAAABKUlEQVR4nO3UsW3CUBhF4UtBwxIZgAnYAEZgg2QEOsagTEnLBmzAAKRmiyhpXkQBFo6E/fDx+aS/si3d0ziRpP/blhuNn3KjYTCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXQG0xlMZzCdwXTI4EmSXZL9nfsLvvdsV74dpE2ucW1vU2Xpk8ySXNI+9lK+GbSPtA9+r7TxqaZJvvI49lzeRVjncfC62roOTJKc0hx7yoD/zE1WaQ5eVtzVqWNuY48V93RukdvgRdVFPTjkGnuovKUX8yTf5eaVt/Tms9xovJWTJEmSJEmSJEmS9Cp+ASc7C0e6nlxVAAAAAElFTkSuQmCC"
+         preserveAspectRatio="none"
+         height="134"
+         width="60" />
+    </g>
+    <g
+       id="g712"
+       transform="translate(479.4949,477.86218)">
+      <image
+         id="image714"
+         xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAACGCAYAAAC8E0pCAAAC7UlEQVR4nO3dvWoUYRxG8YMSLIJ2egVqLxYam4igrWAdEbwABfuYv7kAyS2oaMRCS8EbEAstVEQ7sRQbi9glsXh3dhWi+Mn7bPb8YNgiKR7ImdmdKbIgSZIk/VungRq9ShEK2B69ShEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVpjBKhSmMUmEKo1SYwigVZpkW5WrvIdLgCi3Ktd5DpMESLco7vYdIgxO0KF/1HiIN5oANYBM41HmLNPaQdrVc6T1EGizQovwMHO28RRq7SwvzHYapEPPAcyZXzBX8jKkA80yumNu0m59XtMdFa7QH7OUxlccy7Zn0Eu2JyxxTZoF287PBJFCP3XVsjP7Gp5gyc7Szaol2li3T/4z3+LNjlfZud5v27rfJJNB7tHdJqatDwHXa/cM28ALDVIgjwFtamOudt0hjR5hcMafuM6Z2r+u0KB/1HiINDtJufr4whY+LtHu9pF0tT/YeIg1u0aK82HuINLhJi/Jq7yHSoGhRrnTeIY0Nd+A3eg+RBkapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapOEapbs4C93c4hv+69voHPz/XY6xmw37gI7/3bRKfgAM9xmp2XOX3orzWZ6ZmyT7gPb8W5IfR70v/3SV+LcrLvQZq9uyh3dT8LMg3wN5eAzWbzvPzKC/0m6ZZ9pSdg3zWc5Rm2yI7R3mm5yjpMd8H+aTvHAmOAVu0ILeA433nSM06LcoHvYdIg8O0r8E72nuI9K3F3gMkSZIkSZIkSZIkSZIkSZIkSZIkSZIkSZIkSZKkv/YVrtIBZV/QxgQAAAAASUVORK5CYII="
+         preserveAspectRatio="none"
+         height="134"
+         width="165" />
+    </g>
+    <g
+       id="g716"
+       transform="translate(180.5,414.86218)">
+      <image
+         id="image718"
+         xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOoAAABtCAYAAACvIf0uAAAC2ElEQVR4nO3asauVdRzH8bdSS3DBsaYGx0Dn/gClJgeXwlmoXZCE4jf6Bzi4NrbVJE7WX9Buzi2C4OJ2qeHhoohXTZPney+vF/z2z3nOeR8eznMKAAAAAAAAAAAAAAAAAAAAAAAAAABOuzN7DwDe7G71Q/XJ3kOA4/1S/VP9XX1XfbTvHOBVjkI9On9V3+SWGEZ5OdSj82f11Y67gBccF+rR+b36cq9xwOZNoR6dX6svdtp4qlyoblX3qkfVk+qwt3sTHOdtzmH1c/V5/GcXq/vt/yY6p/8I9R1dq561XcSn1Z3qanW+Oled3W8aJ8Tb3vr+llvfd3Kp57e2d6uDfedwQr0p1D/yY9I7O6get13IH3fewsn2usczX++461S40XYxH+TBNO/nVX94+Dafq//Fw7aLennvIZx4L/6F8Pvq433nnB6ftV3YJ/nW4/35U/4HcqUt1Ht7D+FU8GX/gVzv+S+9wFA320K9vfcQ4HirLdS17wzgdVZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8VZChfFWQoXxVkKF8W63hXpz7yHA8e62hXp97yHA8e61hXpl7yHAq52pnrSF+unOW4BjXG6L9OHeQ4BXO1M9aAv1xs5bgGP81Bbp4+pg5y3ASw56/kvvYXVp3znA2epcdb66Wt2pnrZF+qy6tt80mGe1xTHl3K8ufsgXDCfRap8gD9sevzxqe156q7rwYV8qAAAAg/wLKE1YuFFmcPgAAAAASUVORK5CYII="
+         preserveAspectRatio="none"
+         height="109"
+         width="234" />
+    </g>
+  </g>
+</svg>

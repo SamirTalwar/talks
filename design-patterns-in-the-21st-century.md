@@ -393,7 +393,8 @@ And we'd use it like this:
 <section markdown="1">
 The pattern generally follows this simple structure:
 
-**INSERT UML HERE**
+![Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml.svg)
+{: .image}
 
 That's nice, right?
 </section>
@@ -445,7 +446,8 @@ Often, though, all we really need is a method reference.
 Our new UML diagram will look something like this:
 {: .notes}
 
-**INSERT UML HERE**
+![Updated Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml-functional.svg)
+{: .image}
 
 Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. The concept is still very important; by explicitly creating adapters, we can keep these two worlds separate except at defined boundary points. The implementations, though? They're just functions.
 {:.notes}
@@ -510,7 +512,8 @@ Or a website might use a chain of handlers to handle an HTTP request:
 In UML, it looks a little like this:
 {: .notes}
 
-**INSERT UML HERE**
+![Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml.svg)
+{: .image}
 </section>
 
 <section markdown="1">
@@ -656,7 +659,8 @@ A [`Stream`](http://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.ht
 Our new structure is quite different—far more so than the earlier examples.
 {: .notes}
 
-**INSERT UML HERE**
+![Updated Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml-functional.svg)
+{: .image}
 
 By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list of elements), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around in the form of a lambda expression.
 {: .notes}
