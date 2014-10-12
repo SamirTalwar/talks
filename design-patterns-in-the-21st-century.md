@@ -207,8 +207,6 @@ More generally, the Abstract Factory pattern is usually implemented according to
 ![Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml.svg)
 {: .image}
 
-<cite markdown="1">[By Giacomo Ritucci, licensed under CC-BY-SA-3.0, via Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Abstract_factory_UML.svg)</cite>
-
 In this example, `Pastry` and `Cake` are "abstract products", and `Bakery` is an "abstract factory". Their implementations are the concrete variants.
 {: .notes}
 </section>
