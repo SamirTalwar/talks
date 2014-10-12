@@ -107,7 +107,7 @@ And like this:
         public Course using(Ingredient eggs, Ingredient butter, Ingredient sugar, Ingredient special) {
             return new CakeMix(eggs, butter, sugar).with(special);
         }
-    }
+    };
 
 <div class="fragment" markdown="1">
 Which of course, is the same as this:
@@ -119,7 +119,7 @@ Which of course, is the same as this:
 </section>
 
 <section markdown="1">
-But if we break apart that constructor…
+But if we break apart that `using` method…
 
     interface MixPreparation {
         Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
@@ -287,7 +287,7 @@ Or even:
 
 Voila. Our `DanishBakery` class has gone.
 
-We could even get rid of the `Bakery` interface here and just use `Function<Topping, Pastry>` instead. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. This is brilliant, but on these occasions, we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
+We could even get rid of the `Bakery` interface here and just use `Function<Topping, Pastry>` instead. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. (`ServiceFactory`, anyone?) This is brilliant, but on these occasions, we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
 {: .notes}
 </div>
 </section>
@@ -676,13 +676,9 @@ We've seen three examples of design patterns that can be drastically improved by
 
 We took these three patterns, made them a lot smaller, removed a lot of boilerplate, and knocked out a bunch of extra classes we didn't need in the process.
 
-But more than that: we made them functional.
+In all cases, we split things apart, only defining the coupling between them in the way objects were constructed. But more than that: we made them functional. The difference between domain objects and infrastructural code became much more explicit. This allowed us to generalise, using the built-in interfaces to do most of the heavy lifting for us, allowing us to eradicate lots of infrastructural types and concentrate on our domain.
 
-* In all cases, we split things apart, only defining the coupling between them in the way objects were constructed.
-* The difference between domain objects and infrastructural code became much more explicit, and we eradicated infrastructure whenever we could.
-* And we generalised, using the built-in interfaces to do most of the heavy lifting for us, avoiding declaring lots of infrastructural types and concentrating on our domain.
-
-It's funny, the resulting code was a lot more object-oriented too.
+It's funny, all this talk about our business domain. It's almost as if the resulting code became a lot more object-oriented too.
 </div>
 </section>
 
