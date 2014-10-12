@@ -682,6 +682,6 @@ It's funny, all this talk about our business domain. It's almost as if the resul
 </div>
 </section>
 
-<section class="slides-only">
+<section class="slides-only" markdown="1">
 ## Thank you.
 </section>
