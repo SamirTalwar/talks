@@ -614,7 +614,7 @@ The `Chain` type is now pretty generic, and so can be detached entirely from our
         Chain<PieEater> pieEaters
             = Chain.from(alice).to(Chain.from(bob).to(Chain.endingWith(carol)));
 
-        assertThat(alice.find(pieEater -> pieEater.ate(BLACKBERRY)),
+        assertThat(pieEaters.find(pieEater -> pieEater.ate(BLACKBERRY)),
                    is(bob));
     }
 
