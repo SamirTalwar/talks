@@ -291,40 +291,6 @@ Aaaaaah. Much better.
 </section>
 
 <section markdown="1">
-### An aside: Bad Design Patterns
-
-Not all design patterns in the Gang of Four's book are treated equally by contemporary programmers. A number of them are seen as examples of bad design.
-{: .notes}
-
-<div class="fragment" markdown="1">
-Here's my favourite:
-
-    public class DumpingGround {
-        private static DumpingGround instance = null;
-
-        private DumpingGround() { }
-
-        public static synchronized DumpingGround getInstance() {
-            if (instance == null) {
-                instance = new DumpingGround();
-            }
-            return instance;
-        }
-    }
-</div>
-
-<div class="fragment" markdown="1">
-Ew.
-</div>
-
-There's so much wrong with that code. This is an example of the *singleton pattern*, which is an idiom for sharing an object throughout your codebase with minimum effort. Assuming you want to write code that is unmaintainable. Singleton objects are pervasive—they get everywhere—and so your design becomes incredibly coupled to this one object. That means that replacing it, changing it or reworking it is practically impossible. It also makes it very hard to test your code, as the singleton has state, and so anything that uses it becomes completely interdependent with everything else.
-{: .notes}
-
-There are more bad design patterns, which I will not dwell upon further. I simply bring this one up to demonstrate that not all are worth rescuing. Now, let's take a look at one I quite like instead.
-{: .notes}
-</section>
-
-<section markdown="1">
 ### The Adapter Pattern
 
 The Adapter pattern bridges worlds. In one world, we have an interface for a concept; in another world, we have a different interface. These two interfaces serve different purposes, but sometimes we need to transfer things across. In a well-written universe, we can use *adapters* to make objects following one protocol adhere to the other.
