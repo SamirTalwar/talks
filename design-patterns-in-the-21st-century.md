@@ -95,7 +95,7 @@ Values like this:
 <div class="fragment" markdown="1">
 But also like this:
 
-    Course dessert = prepareCake.using(eggs, butter, sugar, chocolate);
+    Course dessert = prepareCake.madeOf(chocolate);
 </div>
 </section>
 
@@ -104,8 +104,9 @@ And like this:
 
     Preparation prepareCake = new Preparation() {
         @Override
-        public Course using(Ingredient eggs, Ingredient butter, Ingredient sugar, Ingredient special) {
-            return new CakeMix(eggs, butter, sugar).with(special);
+        public Course madeOf(Ingredient deliciousIngredient) {
+            return new CakeMix(eggs, butter, sugar)
+                    .combinedWith(deliciousIngredient);
         }
     };
 
@@ -113,36 +114,18 @@ And like this:
 Which of course, is the same as this:
 
     Preparation prepareCake =
-        (eggs, butter, sugar, special)
-            -> new CakeMix(eggs, butter, sugar).with(special);
-</div>
-</section>
-
-<section markdown="1">
-But if we break apart that `using` method…
-
-    interface MixPreparation {
-        Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
-    }
-
-    interface Mix {
-        Course with(Ingredient special);
-    }
-
-<div class="fragment" markdown="1">
-We can do something like this:
-
-    MixPreparation prepareCake =
-        (eggs, butter, sugar)
-            -> special
-                -> new CakeMix(eggs, butter, sugar).with(special);
+        deliciousIngredient ->
+            new CakeMix(eggs, butter, sugar)
+                .combinedWith(deliciousIngredient);
 </div>
 
 <div class="fragment" markdown="1">
-Which is the same as this:
+Which is *almost* the same as this:
 
-    MixPreparation prepareCake =
-        CakeMix::new;
+    Preparation prepareCake =
+        new CakeMix(eggs, butter, sugar)::combinedWith;
+
+(Assuming `CakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the above code constructs many.)
 </div>
 </section>
 
@@ -152,20 +135,28 @@ Which is the same as this:
 <div class="fragment" markdown="1">
 Yes. It's weird, but it works out.
 
-`CakeMix::new` is a *method reference* to `new CakeMix(…)`. Its type looks like this:
+First, we construct a `CakeMix` object.
 
-    (Ingredient, Ingredient, Ingredient) -> CakeMix
+    new CakeMix(eggs, butter, sugar)
+
+Then we ask it for a reference to its `combinedWith` method:
+
+    new CakeMix(eggs, butter, sugar)::combinedWith
+
+`<some cake mix>::combinedWith` is a *method reference*. Its type looks like this:
+
+    Ingredient -> Course
 </div>
 
 <div class="fragment" markdown="1">
-And `MixPreparation` looks like this:
+And `Preparation` looks like this:
 
-    interface MixPreparation {
-        Mix using(Ingredient eggs, Ingredient butter, Ingredient sugar);
+    interface Preparation {
+        Course madeOf(Ingredient deliciousIngredient);
     }
 </div>
 
-The function is coercible to the type of the *functional interface*, `MixPreparation`. Functionally, they're equivalent, and from version 1.8 and up, the JVM knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
+The function is coercible to the type of the *functional interface*, `Preparation`. Functionally, they're equivalent, and from version 8 and up, the Java compiler knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
 {: .notes}
 </section>
 
