@@ -182,7 +182,7 @@ And the implementation:
 
     public class DanishBakery implements Bakery {
         @Override public Pastry bakePastry(Topping topping) {
-            return new DanishPastry(Topping topping);
+            return new DanishPastry(topping);
         }
 
         @Override public Cake bakeCake() {
@@ -208,35 +208,10 @@ Now, that's a fairly general example.
 
 In actual fact, most factories only have one "create" method.
 
+    @FunctionalInterface
     public interface Bakery {
         Pastry bakePastry(Topping topping);
     }
-
-<div class="fragment" markdown="1">
-And often comply with a very generic interface:
-
-    package java.util.function;
-
-    @FunctionalInterface
-    public interface Function<T, R> {
-        /**
-         * Applies this function to the given argument.
-         */
-        R apply(T t);
-
-        ...
-    }
-
-Hmmm…
-</div>
-
-<div class="fragment" markdown="1">
-    public interface Bakery extends Function<Topping, Pastry> {
-        // this isn't necessary
-        @Override
-        Pastry apply(Topping topping);
-    }
-</div>
 
 <div class="fragment" markdown="1">
 Oh look, it's a function.
@@ -259,7 +234,7 @@ So how would we implement this pastry maker?
 <div class="notes" markdown="1">
 OK, sure, that was easy. It looks the same as the earlier `DanishBakery` except it can't make cake. Delicious apple cake… what's the point of that?
 
-Well, if you remember, `Bakery` is now simply a subtype of `Function` which adds no further behaviour, which means it has a **Single Abstract Method**. This means it's a **Functional Interface**.
+Well, if you remember, `Bakery` has a **Single Abstract Method**. This means it's a **Functional Interface**.
 </div>
 </div>
 
@@ -275,8 +250,33 @@ Or even:
     Bakery danishBakery = DanishPastry::new;
 
 Voila. Our `DanishBakery` class has gone.
+</div>
 
-We could even get rid of the `Bakery` interface here and just use `Function<Topping, Pastry>` instead. In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. (`ServiceFactory`, anyone?) This is brilliant, but on these occasions, we don't need explicit classes for it—Java 8 has a bunch of interfaces built in that suit our needs fairly well.
+<div class="fragment" markdown="1">
+But we can go further.
+
+    package java.util.function;
+    /**
+     * Represents a function that
+     * accepts one argument and produces a result.
+     *
+     * @since 1.8
+     */
+    @FunctionalInterface
+    public interface Function<T, R> {
+        /**
+         * Applies this function to the given argument.
+         */
+        R apply(T t);
+
+        ...
+    }
+
+We can replace the `Bakery` with `Function<Topping, Pastry>`; they have the same types.
+
+    Function<Topping, Pastry> danishBakery = DanishPastry::new;
+
+In this case, we might want to keep it, as it has a name relevant to our business, but often, `Factory`-like objects serve no real domain purpose except to help us decouple our code. (`UserServiceFactory`, anyone?) This is brilliant, but on these occasions, we don't need explicit classes for it—Java 8 has a bunch of interfaces built in, such as `Function`, `Supplier` and many more in the `java.util.function` package, that suit our needs fairly well.
 {: .notes}
 </div>
 </section>
