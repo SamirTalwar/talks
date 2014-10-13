@@ -15,7 +15,9 @@
             <aside class="actions">
                 <span>View as:</span>
                 <a class="action show-essay" href="#">Essay</a>
-                &bull; <a class="action show-presentation" href="#">Presentation</a>
+                {% if page.presentation and page.presentation.enabled %}
+                    &bull; <a class="action show-presentation" href="#">Presentation</a>
+                {% endif %}
                 {% if page.video %}
                     &bull; <a class="action show-video" href="http://youtu.be/{{ page.video.id }}">Video</a>
                 {% endif %}
