@@ -293,22 +293,62 @@ We could go one further and compose method references, but it actually gets wors
 
 This is because Java can't convert between functional interfaces implicitly, so we need to give it lots of hints about what each phase of the operation is. Lambdas, on the other hand, are implicitly coercible to any functional interface with the right types, and the compiler does a pretty good job of figuring out how to do it.
 
-Often, though, all we really need is a method reference.
-
-    Future<Sandwich> sandwichFuture
-        = sudo.makeMeA(Sandwich.class);
-
-    Supplier<Sandwich> sandwichSupplier
-        = () -> sandwichFuture.get();
-
-    Supplier<Sandwich> sandwichSupplier
-        = sandwichFuture::get;
-
-
 Our new UML diagram will look something like this:
 
 ![Updated Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml-functional.svg)
 {: .image}
+
+Often, though, all we really need is a method reference. For example, take the `Executor` interface.
+
+    package java.util.concurrent;
+
+    /**
+     * An object that executes submitted {@link Runnable} tasks.
+     */
+    public interface Executor {
+        void execute(Runnable command);
+    }
+
+It consumes `Runnable` objects, and it's a very useful interface.
+
+Now let's say we have one of those, and a bunch of `Runnable` tasks, held in a `Stream`.
+
+    Executor executor = ...;
+    Stream<Runnable> tasks = ...;
+
+How do we execute all of them on our `Executor`?
+
+This won't work:
+
+    tasks.forEach(executor);
+
+It turns out the `forEach` method on `Stream` *does* take a consumer, but a very specific type:
+
+    public interface Stream<T> {
+        ...
+
+        void forEach(Consumer<? super T> action);
+
+        ...
+    }
+
+A `Consumer` looks like this:
+
+    @FunctionalInterface
+    public interface Consumer<T>
+    {
+        void accept(T t);
+
+        ...
+    }
+
+At first glance, that doesn't look so helpful. But note that `Consumer` is a functional interface, so we can use lambdas to specify them really easily. That means that we can do this:
+
+    tasks.forEach(task -> executor.execute(task));
+
+Which can be simplified further to this:
+
+    tasks.forEach(executor::execute);
 
 Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. The concept is still very important; by explicitly creating adapters, we can keep these two worlds separate except at defined boundary points. The implementations, though? They're just functions.
 {:.notes}
