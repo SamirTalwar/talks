@@ -51,7 +51,7 @@ I want you to stop using design patterns like it's *1999*.
 
 <p style="text-align: center;"><img src="assets/images/design-patterns-in-the-21st-century/design-patterns.jpg" alt="Design Patterns, by Gamma, Helm, Johnson and Vlissides" style="max-width: 50%;"/></p>
 
-*Design Patterns* was a book written by the "Gang of Four" very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
+*Design Patterns* was a book by the "Gang of Four", first published very nearly 20 years ago (at the time of writing this essay), which attempted to canonicalise and formalise the tools that many experienced software developers and designers found themselves using over and over again.
 
 The originator of the concept (and the term "design pattern") was Christopher Alexander, who wasn't a software developer at all. Alexander was an architect who came up with the idea of rigorously documenting common problems in design with their potential solutions.
 
@@ -81,19 +81,27 @@ And like this:
         }
     };
 
-Which of course, is the same as this:
+Preparation looks like this:
+
+    interface Preparation {
+        Course madeOf(Ingredient deliciousIngredient);
+    }
+
+So of course, the `prepareCake` object could also be written like this.
 
     Preparation prepareCake =
         deliciousIngredient ->
             new CakeMix(eggs, butter, sugar)
                 .combinedWith(deliciousIngredient);
 
-Which is *almost* the same as this:
+Because `Preparation` is an interface with a **Single Abstract Method**, any lambda with the same type signature as `Preparation`'s method signature can be assigned to an object of type `Preparation`. This means that `Preparation` is a **functional interface**.
+
+We can go one further. The above code is almost the same as this:
 
     Preparation prepareCake =
         new CakeMix(eggs, butter, sugar)::combinedWith;
 
-(Assuming `CakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the above code constructs many.)
+(Assuming `CakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the above code constructs a new one each time.)
 
 ### Well.
 
@@ -109,15 +117,9 @@ Then we ask it for a reference to its `combinedWith` method:
 
 `<some cake mix>::combinedWith` is a *method reference*. Its type looks like this:
 
-    Ingredient -> Course
+    Course combinedWith(Ingredient);
 
-And `Preparation` looks like this:
-
-    interface Preparation {
-        Course madeOf(Ingredient deliciousIngredient);
-    }
-
-The function is coercible to the type of the *functional interface*, `Preparation`. Functionally, they're equivalent, and from version 8 and up, the Java compiler knows how to turn lambdas into anything matching the types with a *Single Abstract Method*.
+And it's exactly the same as `ingredient -> <some cake mix>.combinedWith(ingredient)`.
 
 ## On to the Good Stuff
 
