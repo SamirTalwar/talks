@@ -61,10 +61,6 @@ Alexander, and the Gang of Four after him, did more than just document solutions
 
 ## And now, an aside, on functional programming.
 
-Functional programming is all about *functions*.
-
-## And now, an aside, on functional programming.
-
 Functional programming is all about <em><del>functions</del> <ins>values</ins></em>.
 
 Values like this:
@@ -538,5 +534,3 @@ We took these three patterns, made them a lot smaller, removed a lot of boilerpl
 In all cases, we split things apart, only defining the coupling between them in the way objects were constructed. But more than that: we made them functional. The difference between domain objects and infrastructural code became much more explicit. This allowed us to generalise, using the built-in interfaces to do most of the heavy lifting for us, allowing us to eradicate lots of infrastructural types and concentrate on our domain.
 
 It's funny, all this talk about our business domain. It's almost as if the resulting code became a lot more object-oriented too.
-
-## Thank you.
