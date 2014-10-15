@@ -353,48 +353,68 @@ Here's a thing you might not see a lot.
 
     @Test public void whoAteMyPie() {
         PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(CARROT);
+        PieEater bob = PieEater.withFavourite(BLUEBERRY);
+        PieEater carol = PieEater.withFavourite(CHERRY);
 
         alice.setNext(bob);
         bob.setNext(carol);
 
-        assertThat(alice.whoAte(BLACKBERRY), is(bob));
+        alice.give(blueberryPie);
+
+        assertThat(bob, ate(blueberryPie));
     }
 
-It might look odd, but the idea is fairly common.
+It might look odd, but the idea is fairly common. For example, the Java Servlets framework uses the concept of a `FilterChain` to model a sequence of filters upon a request.
 
-For example, a Java logging framework might construct a chain of loggers:
+You can use `Filter` objects to do pretty much anything with a request. Here's one that tracks how many hits there have been to a site. Notice that it passes the `request` and `response` objects onto the next filter in the chain when it's done.
 
-    private static Logger createChain() {
-        Logger stdoutLogger = new StdoutLogger(LogLevel.DEBUG);
+    public final class HitCounterFilter implements Filter {
+        // initialization and destruction methods go here
 
-        Logger emailLogger = new EmailLogger(LogLevel.NOTICE);
-        stdoutLogger.setNext(emailLogger);
-
-        Logger stderrLogger = new StderrLogger(LogLevel.ERR);
-        emailLogger.setNext(stderrLogger);
-
-        return stdoutLogger;
+        public void doFilter(
+                ServletRequest request,
+                ServletResponse response,
+                FilterChain chain)
+        {
+            int hits = getCounter().incCounter();
+            log(“The number of hits is ” + hits);
+            chain.doFilter(request, response);
+        }
     }
 
-Or a website might use a chain of handlers to handle an HTTP request:
+We might use an object in the chain to modify the input or output (in this case, the request or response):
 
-    private static Handler createHandler() {
-        Handler homePageHandler
-            = new PageHandler("/", request -> serveHomePage(request));
-        Handler aboutPageHandler
-            = new PageHandler("/about", request -> serveAboutPage(request));
-        Handler staticAssetsHandler
-            = new StaticResourceHandler("/assets", Paths.get("/assets"));
-        Handler notFoundHandler = new NotFoundHandler();
+    public final class SwitchEncodingFilter implements Filter {
+        // initialization and destruction methods go here
 
-        homePageHandler.setNext(aboutPageHandler);
-        aboutPageHandler.setNext(staticAssetsHandler);
-        staticAssetsHandler.setNext(notFoundHandler);
-
-        return homePageHandler;
+        public void doFilter(
+                ServletRequest request,
+                ServletResponse response,
+                FilterChain chain)
+        {
+            request.setEncoding(“UTF-8”);
+            chain.doFilter(request, response);
+        }
     }
+
+We might even bail out of the chain early if things are going pear-shaped.
+
+    public final class AuthorizationFilter implements Filter {
+        // initialization and destruction methods go here
+
+        public void doFilter(
+                ServletRequest request,
+                ServletResponse response,
+                FilterChain chain)
+        {
+            if (!user().canAccess(request)) {
+                throw new AuthException(user);
+            }
+            chain.doFilter(request, response);
+        }
+    }
+
+Basically, once you hit an element in the chain, it has full control.
 
 In UML, it looks a little like this:
 
@@ -405,10 +425,10 @@ In UML, it looks a little like this:
 
 The Chain of Responsibility pattern is generally considered an *anti-pattern* now, for many reasons.
 
-  * First of all, there's the copious amount of mutation,
-  * then there's the confusion… is it one thing or everything?
-  * Not to mention, the order of operations is incredibly easy to get wrong,
-  * and finally, you have no idea whether anything useful will happen at all, as you can fall right off the end of the chain.
+  * First of all, there's the copious amount of mutation.
+  * Then there's the confusion… is it one thing or everything?
+  * Not to mention, the order of operations is incredibly easy to get wrong.
+  * Finally, you have no idea whether anything useful will happen at all, as you can fall right off the end of the chain.
 
 Let's dive a little further into how we can salvage something from all of this.
 
@@ -416,13 +436,15 @@ Remember our pie eaters?
 
     @Test public void whoAteMyPie() {
         PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(CARROT);
+        PieEater bob = PieEater.withFavourite(BLUEBERRY);
+        PieEater carol = PieEater.withFavourite(CHERRY);
 
         alice.setNext(bob);
         bob.setNext(carol);
 
-        assertThat(alice.whoAte(BLACKBERRY), is(bob));
+        alice.give(blueberryPie);
+
+        assertThat(bob, ate(blueberryPie));
     }
 
 That assertion is using [Hamcrest matchers](https://code.google.com/p/hamcrest/wiki/Tutorial#Sugar), by the way. Check them out if you're not too familiar with them. They're amazing.
@@ -433,16 +455,18 @@ Instead of setting the next person later, we'll construct each person with the n
 
     @Test public void whoAteMyPie() {
         PieEater carol = PieEater.atTheEnd()
-            .withFavourite(CARROT);
+            .withFavourite(CHERRY);
         PieEater bob = PieEater.before(carol)
-            .withFavourite(BLACKBERRY);
+            .withFavourite(BLUEBERRY);
         PieEater alice = PieEater.before(bob)
             .withFavourite(APPLE);
 
-        assertThat(alice.whoAte(BLACKBERRY), is(bob));
+        alice.give(blueberryPie);
+
+        assertThat(bob, ate(blueberryPie));
     }
 
-This hasn't changed much, unfortunately. It's still very confusing why Alice would know the answer to the question, and we could still get things in the wrong order or ask the wrong person. Asking Carol would probably lead a complete dead end.
+This hasn't changed much, unfortunately. It's still very confusing why we give the pie to Alice, not anyone else, and we could still get things in the wrong order or ask the wrong person. Giving it Carol would lead to a complete dead end.
 
 #### Step 2: Separate behaviours.
 
@@ -450,41 +474,50 @@ This hasn't changed much, unfortunately. It's still very confusing why Alice wou
 
     @Test public void whoAteMyPie() {
         Chain<PieEater> carol
-            = Chain.endingWith(PieEater.withFavourite(CARROT));
+            = Chain.endingWith(PieEater.withFavourite(CHERRY));
         Chain<PieEater> bob
-            = Chain.from(PieEater.withFavourite(BLACKBERRY)).to(carol);
+            = Chain.from(PieEater.withFavourite(BLUEBERRY))
+                   .to(carol);
         Chain<PieEater> alice
-            = Chain.from(PieEater.withFavourite(APPLE)).to(bob);
+            = Chain.from(PieEater.withFavourite(APPLE))
+                   .to(bob);
 
-        assertThat(alice.find(pieEater -> pieEater.ate(BLACKBERRY)),
-                   is(bob));
+        alice.give(blueberryPie);
+
+        assertThat(bob, ate(blueberryPie));
     }
 
-Note that `Chain` is generic by nature, and so doesn't  know anything about the object, `PieEater`. This means that when we ask it a question, we have to give it more information on its contents so it can do its job. We do this by providing a lambda to the `find` method which tells it *how* to find the culprit. In essence, instead of the behaviour being *baked in* (pun totally intended) to the `PieEater` or `Chain` types, we extract it out.
+We now have two distinct concepts:
 
-We now have three distinct concepts here:
-
-  * The pie eater, who eats pies,
-  * the `Chain`, which is a piece of infrastructure that lets us find things, and
-  * the operation passed to `find`, described in terms of the `ate` method.
+  * The pie eater, who eats pies, and
+  * the `Chain`, which gives pies to pie eaters.
 
 #### Step 3: Split the domain from the infrastructure.
 
-The `Chain` type is now pretty generic, and so can be detached entirely from our domain objects. Let's keep it away from our pie eaters.
+The `Chain` type still knows too much about pie eating. I want something generic that can be detached entirely from our domain objects. Let's keep it away from our pie eaters.
 
-    @Test public void whoAteAllThePies() {
+    @Test public void whoAteMyPie() {
         PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(CARROT);
+        PieEater bob = PieEater.withFavourite(BLUEBERRY);
+        PieEater carol = PieEater.withFavourite(CHERRY);
 
         Chain<PieEater> pieEaters
             = Chain.from(alice).to(Chain.from(bob).to(Chain.endingWith(carol)));
 
-        assertThat(pieEaters.find(pieEater -> pieEater.ate(BLACKBERRY)),
-                   is(bob));
+        pieEaters.find(person -> person.loves(BLUEBERRY))
+                 .give(blueberryPie);
+
+        assertThat(bob, ate(blueberryPie));
     }
 
-OK, they're back in order now. Whew. That was starting to upset me.
+Note that this version of the `Chain` is generic by nature, and so doesn't know anything about the object, `PieEater`. This means that when we do things with it, we have to give it more information on its contents so it can do its job. We do this by providing a lambda to the `find` method which tells it *how* to find the culprit. In essence, instead of the behaviour being *baked in* (pun totally intended) to the `PieEater` or `Chain` types, we extract it out.
+
+We now have three distinct concepts:
+  * The pie eater, who eats pies, and
+  * the `Chain`, which is a piece of infrastructure that lets us find things, and
+  * the operation passed to `find`, described in terms of the `loves` method.
+
+Oh, and the pie eaters are back in order now. Whew. That was starting to upset me.
 
 #### Step 4: Identify reusable infrastructure.
 
@@ -492,16 +525,16 @@ That `Chain` type looks awfully familiar at this point.
 
 Perhaps it looks something like this:
 
-    cons(alice, cons(bob, cons(carol, nil)))
+    (cons alice (cons bob (cons carol nil)))
 
-Oh, look, [we're coding Lisp](http://en.wikipedia.org/wiki/Cons).
+Oh, look, [we're writing Lisp](http://en.wikipedia.org/wiki/Cons).
 
 Specifically, we're using a construct very similar to Lisp's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
 
-    @Test public void whoAteAllThePies() {
+    @Test public void whoAteMyPie() {
         PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLACKBERRY);
-        PieEater carol = PieEater.withFavourite(CARROT);
+        PieEater bob = PieEater.withFavourite(BLUEBERRY);
+        PieEater carol = PieEater.withFavourite(CHERRY);
 
         Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
 
