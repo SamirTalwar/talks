@@ -2,6 +2,8 @@
 layout: default
 title: Design Patterns in the 21st Century
 date: 2014-10-15 11:00:00 +0100
+presentation:
+  link: http://www.slideshare.net/SamirTalwar/design-patterns-in-the-21st-century
 
 code:
   language: java

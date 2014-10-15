@@ -24,6 +24,8 @@
                 <a class="action show-essay" href="#">Essay</a>
                 {% if page.presentation and page.presentation.enabled %}
                     &bull; <a class="action show-presentation" href="#">Presentation</a>
+                {% else if page.presentation.link %}
+                    &bull; <a class="action link-to-presentation" href="{{ page.presentation.link }}">Presentation</a>
                 {% endif %}
                 {% if page.video %}
                     &bull; <a class="action show-video" href="http://youtu.be/{{ page.video.id }}">Video</a>
