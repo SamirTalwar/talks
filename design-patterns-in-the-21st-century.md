@@ -144,7 +144,7 @@ And the implementation:
 
 More generally, the Abstract Factory pattern is usually implemented according to this structure.
 
-![Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml.svg)
+![Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml.png)
 {: .image}
 
 In this example, `Pastry` and `Cake` are "abstract products", and `Bakery` is an "abstract factory". Their implementations are the concrete variants.
@@ -211,7 +211,7 @@ In this case, we might want to keep it, as it has a name relevant to our busines
 
 Here's our updated UML diagram:
 
-![Updated Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml-functional.svg)
+![Updated Abstract Factory pattern UML diagram](assets/images/design-patterns-in-the-21st-century/abstract-factory-pattern-uml-functional.png)
 {: .image}
 
 Aaaaaah. Much better.
@@ -265,7 +265,7 @@ And we'd use it like this:
 
 The pattern generally follows this simple structure:
 
-![Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml.svg)
+![Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml.png)
 {: .image}
 
 That's nice, right?
@@ -291,7 +291,7 @@ This is because Java can't convert between functional interfaces implicitly, so 
 
 Our new UML diagram will look something like this:
 
-![Updated Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml-functional.svg)
+![Updated Adapter pattern UML diagram](assets/images/design-patterns-in-the-21st-century/adapter-pattern-uml-functional.png)
 {: .image}
 
 Often, though, all we really need is a method reference. For example, take the `Executor` interface.
@@ -420,7 +420,7 @@ Basically, once you hit an element in the chain, it has full control.
 
 In UML, it looks a little like this:
 
-![Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml.svg)
+![Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml.png)
 {: .image}
 
 #### This is probably bad practice.
@@ -549,7 +549,7 @@ A [`Stream`](http://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.ht
 
 Our new structure is quite different—far more so than the earlier examples.
 
-![Updated Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml-functional.svg)
+![Updated Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml-functional.png)
 {: .image}
 
 By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list of elements), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around in the form of a lambda expression.
