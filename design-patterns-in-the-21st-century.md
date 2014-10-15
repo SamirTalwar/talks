@@ -98,28 +98,24 @@ Because `Preparation` is an interface with a **Single Abstract Method**, any lam
 
 We can go one further. The above code is almost the same as this:
 
-    Preparation prepareCake =
-        new CakeMix(eggs, butter, sugar)::combinedWith;
+    Mix cakeMix = new CakeMix(eggs, butter, sugar);
+    Preparation prepareCake = cakeMix::combinedWith;
 
-(Assuming `CakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the above code constructs a new one each time.)
+(Assuming `cakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the code above it constructs a new one each time.)
 
 ### Well.
 
 Yes. It's weird, but it works out.
 
-First, we construct a `CakeMix` object.
+We're assigning `prepareCake` a reference to the `combinedWith` method of `cakeMix`:
 
-    new CakeMix(eggs, butter, sugar)
+    cakeMix::combinedWith
 
-Then we ask it for a reference to its `combinedWith` method:
-
-    new CakeMix(eggs, butter, sugar)::combinedWith
-
-`<some cake mix>::combinedWith` is a *method reference*. Its type looks like this:
+`cakeMix::combinedWith` is a *method reference*. Its type looks like this:
 
     Course combinedWith(Ingredient);
 
-And it's exactly the same as `ingredient -> <some cake mix>.combinedWith(ingredient)`.
+And it's (pretty much) exactly the same as `ingredient -> cakeMix.combinedWith(ingredient)`.
 
 ## On to the Good Stuff
 
