@@ -5,6 +5,8 @@ date: 2014-10-15 11:00:00 +0100
 
 code:
   language: java
+
+redirect_from: /
 ---
 
 ## Introduction

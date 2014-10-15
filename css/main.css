@@ -21,6 +21,28 @@ body {
   font-size: small;
 }
 
+nav {
+    margin-bottom: 2em;
+}
+
+nav > ul {
+    margin: 0;
+    list-style: none;
+    text-align: center;
+}
+
+nav > ul > li {
+    display: inline-block;
+}
+
+nav > ul > li:nth-child(n + 2):before {
+    content: ' | ';
+}
+
+nav > ul > li > a {
+    text-decoration: none;
+}
+
 body.essay .document .slides header { margin-bottom: 2em; }
 body.essay .document .slides header h1 { margin: 0; border-bottom: 1px solid #ccc; }
 body.essay .document .slides header h2 { margin: 0; font-size: small; color: #999; }

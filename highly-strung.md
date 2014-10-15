@@ -6,8 +6,6 @@ presentation:
   enabled: true
 video:
   id: http://youtu.be/KMnv-A-ANP4
-
-redirect_from: /
 ---
 
 ## Introduction
