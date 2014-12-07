@@ -87,6 +87,7 @@ And like this:
 
 Preparation looks like this:
 
+    @FunctionalInterface
     interface Preparation {
         Course madeOf(Ingredient deliciousIngredient);
     }
@@ -100,26 +101,30 @@ So of course, the `prepareCake` object could also be written like this.
 
 Because `Preparation` is an interface with a **Single Abstract Method**, any lambda with the same type signature as `Preparation`'s method signature can be assigned to an object of type `Preparation`. This means that `Preparation` is a **functional interface**.
 
-We can go one further. The above code is almost the same as this:
+We can go one further. Let's extract that `new CakeMix` out. Assuming it's an immutable object with no external dependencies, this shouldn't be a problem.
 
-    Mix cakeMix = new CakeMix(eggs, butter, sugar);
-    Preparation prepareCake = cakeMix::combinedWith;
+    Mix mix = new CakeMix(eggs, butter, sugar);
+    Preparation prepareCake =
+        deliciousIngredient -> mix.combinedWith(deliciousIngredient);
 
-(Assuming `cakeMix` is an immutable value object. This code only constructs a single `CakeMix`; the code above it constructs a new one each time.)
+Then we can collapse that lambda expression into a method reference.
+
+    Mix mix = new CakeMix(eggs, butter, sugar);
+    Preparation prepareCake = mix::combinedWith;
 
 ### Well.
 
 Yes. It's weird, but it works out.
 
-We're assigning `prepareCake` a reference to the `combinedWith` method of `cakeMix`:
+We're assigning `prepareCake` a reference to the `combinedWith` method of `mix`:
 
-    cakeMix::combinedWith
+    mix::combinedWith
 
-`cakeMix::combinedWith` is a *method reference*. Its type looks like this:
+`mix::combinedWith` is a *method reference*. Its type looks like this:
 
     Course combinedWith(Ingredient);
 
-And it's (pretty much) exactly the same as `ingredient -> cakeMix.combinedWith(ingredient)`.
+And it's (pretty much) exactly the same as `deliciousIngredient -> cakeMix.combinedWith(deliciousIngredient)`. That means it conforms to our `Preparation` interface above.
 
 ## On to the Good Stuff
 
