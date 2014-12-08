@@ -360,17 +360,20 @@ Java 8 has made adapters so much simpler that I hesitate to call them a pattern 
 
 Here's a thing you might not see a lot.
 
-    @Test public void whoAteMyPie() {
-        PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLUEBERRY);
-        PieEater carol = PieEater.withFavourite(CHERRY);
+    @Test public void hungryHungryPatrons() {
+        KitchenStaff alice = new PieChef();
+        KitchenStaff bob = new DollopDistributor();
+        KitchenStaff carol = new CutleryAdder();
+        KitchenStaff dan = new Server();
 
         alice.setNext(bob);
         bob.setNext(carol);
+        carol.setNext(dan);
 
-        alice.give(blueberryPie);
+        Patron patron = new Patron();
+        alice.prepare(new UncookedPie()).forPatron(patron);
 
-        assertThat(bob, ate(blueberryPie));
+        assertThat(patron, hasPie());
     }
 
 It might look odd, but the idea is fairly common. For example, the Java Servlets framework uses the concept of a `FilterChain` to model a sequence of filters upon a request.
@@ -441,125 +444,182 @@ The Chain of Responsibility pattern is generally considered an *anti-pattern* no
 
 Let's dive a little further into how we can salvage something from all of this.
 
-Remember our pie eaters?
+Remember our hungry patron?
 
-    @Test public void whoAteMyPie() {
-        PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLUEBERRY);
-        PieEater carol = PieEater.withFavourite(CHERRY);
+    @Test public void
+    hungryHungryPatrons() {
+        KitchenStaff alice = new PieChef();
+        KitchenStaff bob = new DollopDistributor();
+        KitchenStaff carol = new CutleryAdder();
+        KitchenStaff dan = new Server();
 
         alice.setNext(bob);
         bob.setNext(carol);
+        carol.setNext(dan);
 
-        alice.give(blueberryPie);
+        Patron patron = new Patron();
+        alice.prepare(new UncookedPie()).forPatron(patron);
 
-        assertThat(bob, ate(blueberryPie));
+        assertThat(patron, hasPie());
     }
 
 That assertion is using [Hamcrest matchers](https://code.google.com/p/hamcrest/wiki/Tutorial#Sugar), by the way. Check them out if you're not too familiar with them. They're amazing.
 
 #### Step 1: Stop mutating.
 
-Instead of setting the next person later, we'll construct each person with the next.
+There are two cases of mutation here: each member of staff has the "next" member set later, and the patrons themselves are mutated. Instead of setting the next member of staff later, we'll construct each one with the next. And as for the patron, we'll start off with a `HungryPatron` and have them return a new instance of themselves upon feeding.
 
-    @Test public void whoAteMyPie() {
-        PieEater carol = PieEater.atTheEnd()
-            .withFavourite(CHERRY);
-        PieEater bob = PieEater.before(carol)
-            .withFavourite(BLUEBERRY);
-        PieEater alice = PieEater.before(bob)
-            .withFavourite(APPLE);
+    @Test public void
+    hungryHungryPatrons() {
+        KitchenStaff dan = new Server();
+        KitchenStaff carol = new CutleryAdder(dan);
+        KitchenStaff bob = new DollopDistributor(carol);
+        KitchenStaff alice = new PieChef(bob);
 
-        alice.give(blueberryPie);
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = alice.prepare(new UncookedPie()).forPatron(hungryPatron);
 
-        assertThat(bob, ate(blueberryPie));
+        assertThat(happyPatron, hasPie());
     }
 
-This hasn't changed much, unfortunately. It's still very confusing why we give the pie to Alice, not anyone else, and we could still get things in the wrong order or ask the wrong person. Giving it Carol would lead to a complete dead end.
+This hasn't changed much, unfortunately. It's still very confusing why we giving the pie to Alice results in the patron receiving it, and we could still get things in the wrong order or ask the wrong person to do something.
 
-#### Step 2: Separate behaviours.
+#### Step 2: Make it type-safe.
 
-`PieEater` does two things: delegate to the next person and identify pie. Let's split that up into two different concepts. We'll have a type, `Chain`, which handles what's next.
+Part of the problem with the ordering is that even though Alice gives the next person a `CookedPie`, we could tell her to give it to anyone, resulting in a `ClassCastException` or something equally fun. By parameterising the types, we can avoid this, ensuring that both the input and output types are correct.
 
-    @Test public void whoAteMyPie() {
-        Chain<PieEater> carol
-            = Chain.endingWith(PieEater.withFavourite(CHERRY));
-        Chain<PieEater> bob
-            = Chain.from(PieEater.withFavourite(BLUEBERRY))
-                   .to(carol);
-        Chain<PieEater> alice
-            = Chain.from(PieEater.withFavourite(APPLE))
-                   .to(bob);
+    @Test public void
+    hungryHungryPatrons() {
+        KitchenStaff<WithCutlery<Meal>> dan = new Server();
+        KitchenStaff<Meal> carol = new CutleryAdder(dan);
+        KitchenStaff<CookedPie> bob = new DollopDistributor(carol);
+        KitchenStaff<UncookedPie> alice = new PieChef(bob);
 
-        alice.give(blueberryPie);
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = alice.prepare(new UncookedPie()).forPatron(hungryPatron);
 
-        assertThat(bob, ate(blueberryPie));
+        assertThat(happyPatron, hasPie());
     }
 
-We now have two distinct concepts:
+Though you can't see it here, `PieChef`'s constructor now takes a `KitchenStaff<CookedPie>` instead of just a `KitchenStaff`.
 
-  * The pie eater, who eats pies, and
-  * the `Chain`, which gives pies to pie eaters.
+#### Step 3: Separate behaviours.
 
-#### Step 3: Split the domain from the infrastructure.
+`KitchenStaff` does two things: prepare food, but also hand over the food to the next person. Let's split that up into two different concepts. We'll construct an instance of `KitchenStaff`, then tell them who to delegate to next.
 
-The `Chain` type still knows too much about pie eating. I want something generic that can be detached entirely from our domain objects. Let's keep it away from our pie eaters.
+    @Test public void
+    hungryHungryPatrons() {
+        KitchenStaff<WithCutlery<Meal>, Serving> dan = new Server();
+        KitchenStaff<Meal, Serving> carol = new CutleryAdder().then(dan);
+        KitchenStaff<CookedPie, Serving> bob = new DollopDistributor().then(carol);
+        KitchenStaff<UncookedPie, Serving> alice = new PieChef().then(bob);
 
-    @Test public void whoAteMyPie() {
-        PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLUEBERRY);
-        PieEater carol = PieEater.withFavourite(CHERRY);
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = alice.prepare(new UncookedPie()).forPatron(hungryPatron);
 
-        Chain<PieEater> pieEaters
-            = Chain.from(alice).to(Chain.from(bob).to(Chain.endingWith(carol)));
-
-        pieEaters.find(person -> person.loves(BLUEBERRY))
-                 .give(blueberryPie);
-
-        assertThat(bob, ate(blueberryPie));
+        assertThat(happyPatron, hasPie());
     }
 
-Note that this version of the `Chain` is generic by nature, and so doesn't know anything about the object, `PieEater`. This means that when we do things with it, we have to give it more information on its contents so it can do its job. We do this by providing a lambda to the `find` method which tells it *how* to find the culprit. In essence, instead of the behaviour being *baked in* (pun totally intended) to the `PieEater` or `Chain` types, we extract it out.
+In this situation, `then` doesn't modify the object directly, but instead returns a new instance of `KitchenStaff` who knows to pass it on. It looks something like this:
 
-We now have three distinct concepts:
-  * The pie eater, who eats pies, and
-  * the `Chain`, which is a piece of infrastructure that lets us find things, and
-  * the operation passed to `find`, described in terms of the `loves` method.
+    private static interface KitchenStaff<I, O> {
+        O prepare(I input);
 
-Oh, and the pie eaters are back in order now. Whew. That was starting to upset me.
+        default <Next> KitchenStaff<I, Next> then(KitchenStaff<O, Next> next) {
+            return input -> {
+                O output = prepare(input);
+                return next.prepare(output);
+            };
+        }
+    }
 
-#### Step 4: Identify reusable infrastructure.
+This has had the side effect of making sure we return a value rather than operating purely on side effects. By doing this, we can ensure that we *always* pass on the value. In situations where we may not want to continue, we can return an `Optional<T>` value, which can contain either something (`Optional.of(value)`) or nothing (`Optional.empty()`).
 
-That `Chain` type looks awfully familiar at this point.
+#### Step 4: Split the domain from the infrastructure.
+
+Now that we have separated the chaining from the construction of the `KitchenStaff`, we can separate the two. `alice`, `bob` and friends are useful objects to know about in their own right, and it's pretty confusing to see them only as part of the chain. Let's leave the chaining until later.
+
+    @Test public void
+    hungryHungryPatrons() {
+        KitchenStaff<UncookedPie, CookedPie> alice = new PieChef();
+        KitchenStaff<CookedPie, Meal> bob = new DollopDistributor();
+        KitchenStaff<Meal, WithCutlery<Meal>> carol = new CutleryAdder();
+        KitchenStaff<WithCutlery<Meal>, Serving> dan = new Server();
+
+        KitchenStaff<UncookedPie, Serving> staff = alice.then(bob).then(carol).then(dan);
+
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = staff(new UncookedPie()).forPatron(hungryPatron);
+
+        assertThat(happyPatron, hasPie());
+    }
+
+So now we have a composite object, `staff`, which embodies the chain of operations. This allows us to see the individuals as part of it as separate entities.
+
+#### Step 5: Identify redundant infrastructure.
+
+That `KitchenStaff` type looks awfully familiar at this point.
 
 Perhaps it looks something like this:
 
-    (cons alice (cons bob (cons carol nil)))
+    @FunctionalInterface
+    public interface Function<T, R> {
+        R apply(T t);
 
-Oh, look, [we're writing Lisp](http://en.wikipedia.org/wiki/Cons).
+        ...
 
-Specifically, we're using a construct very similar to Lisp's immutable linked list data structure. Which makes me wonder: can we use our own lists here, or something similar?
+        default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
+            Objects.requireNonNull(after);
+            return (T t) -> after.apply(apply(t));
+        }
 
-    @Test public void whoAteMyPie() {
-        PieEater alice = PieEater.withFavourite(APPLE);
-        PieEater bob = PieEater.withFavourite(BLUEBERRY);
-        PieEater carol = PieEater.withFavourite(CHERRY);
-
-        Stream<PieEater> pieEaters = Stream.of(alice, bob, carol);
-
-        Optional<PieEater> greedyOne
-            = pieEaters.findAny(pieEater -> pieEater.ate(BLACKBERRY));
-        assert greedyOne.get() == bob;
+        ...
     }
 
-A [`Stream`](http://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html), in Java 8, is a single-use sequence of elements supporting aggregate operations. In this case, we're only using one of its operations, `findAny`, but it has many more capabilities. It's *not* a list, but in our case, we can construct it from a list and then use it to discover information about it.
+Oh, look, it's a function! And `then` is simply function composition. Our `KitchenStaff` type appears to be pretty much a subset of the `Function` type, so why not just use that instead?
+
+    @Test public void
+    hungryHungryPatrons() {
+        Function<UncookedPie, CookedPie> alice = new PieChef();
+        Function<CookedPie, Meal> bob = new DollopDistributor();
+        Function<Meal, WithCutlery<Meal>> carol = new CutleryAdder();
+        Function<WithCutlery<Meal>, Serving> dan = new Server();
+
+        Function<UncookedPie, Serving> staff = alice.andThen(bob).andThen(carol).andThen(dan);
+
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = staff.apply(new UncookedPie()).forPatron(hungryPatron);
+
+        assertThat(happyPatron, hasPie());
+    }
+
+#### Step 6: Optionally replace classes with lambdas and method references.
+
+Sometimes you really don't need a full class. In this case, the implementation is simple enough that we can just use method references instead.
+
+    @Test public void
+    hungryHungryPatrons() {
+        Function<UncookedPie, CookedPie> alice = UncookedPie::cook;
+        Function<CookedPie, Meal> bob = CookedPie::addCream;
+        Function<Meal, WithCutlery<Meal>> carol = WithCutlery::new;
+        Function<WithCutlery<Meal>, Serving> dan = Serving::new;
+
+        Function<UncookedPie, Serving> staff = alice.andThen(bob).andThen(carol).andThen(dan);
+
+        Patron hungryPatron = new HungryPatron();
+        Patron happyPatron = staff.apply(new UncookedPie()).forPatron(hungryPatron);
+
+        assertThat(happyPatron, hasPie());
+    }
+
+This drastically cuts down on boilerplate and lets us see what's actually going on.
 
 Our new structure is quite different—far more so than the earlier examples.
 
 ![Updated Chain of Responsibility pattern UML diagram](assets/images/design-patterns-in-the-21st-century/chain-of-responsibility-pattern-uml-functional.png)
 {: .image}
 
-By decoupling the business domain (in this case, pie eating) from the infrastructure (traversing a list of elements), we're able to come up with much cleaner code. This was only possible because we were able to tell the infrastructure something about our domain—i.e. how to detect who ate all the pies—by passing behaviour around in the form of a lambda expression.
+By decoupling the business domain (in this case, pie preparation) from the infrastructure (composed functions), we're able to come up with much cleaner, terser code. Our behavioural classes (focusing around preparation) disappeared, leaving only the domain objects themselves (`UncookedPie`, for example) and the methods on them (e.g. `cook`), which is where the behaviour should probably live anyway.
 
 ## So… what's your point?
 
