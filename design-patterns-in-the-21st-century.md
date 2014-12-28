@@ -371,7 +371,7 @@ Here's a thing you might not see a lot.
         carol.setNext(dan);
 
         Patron patron = new Patron();
-        alice.prepare(new UncookedPie()).forPatron(patron);
+        alice.prepare(new Pie()).forPatron(patron);
 
         assertThat(patron, hasPie());
     }
@@ -435,12 +435,7 @@ In UML, it looks a little like this:
 
 #### This is probably bad practice.
 
-The Chain of Responsibility pattern is generally considered an *anti-pattern* now, for many reasons.
-
-  * First of all, there's the copious amount of mutation.
-  * Then there's the confusion… is it one thing or everything?
-  * Not to mention, the order of operations is incredibly easy to get wrong.
-  * Finally, you have no idea whether anything useful will happen at all, as you can fall right off the end of the chain.
+This may be a little contentious, but I'd say that most implementations of the Chain of Responsibility pattern are pretty confusing. Because the chain relies on each and every member playing its part correctly, it's very easy to simply lose things (in the case above, HTTP requests) by missing a line or two, reordering the chain without thinking through the ramifications, or mutating the `ServletRequest` in a fashion that makes later elements in the chain misbehave.
 
 Let's dive a little further into how we can salvage something from all of this.
 
@@ -458,7 +453,7 @@ Remember our hungry patron?
         carol.setNext(dan);
 
         Patron patron = new Patron();
-        alice.prepare(new UncookedPie()).forPatron(patron);
+        alice.prepare(new Pie()).forPatron(patron);
 
         assertThat(patron, hasPie());
     }
@@ -467,7 +462,13 @@ That assertion is using [Hamcrest matchers](https://code.google.com/p/hamcrest/w
 
 #### Step 1: Stop mutating.
 
-There are two cases of mutation here: each member of staff has the "next" member set later, and the patrons themselves are mutated. Instead of setting the next member of staff later, we'll construct each one with the next. And as for the patron, we'll start off with a `HungryPatron` and have them return a new instance of themselves upon feeding.
+Not all Chain of Responsibility implementations involve mutation, but for those that do, it's best to get rid of it as soon as possible. Making your code immutable makes it much easier to refactor further without making mistakes.
+
+There are three cases of mutation here.
+
+1. Each member of staff has the "next" member set later, and the patrons themselves are mutated. Instead of setting the next member of staff later, we'll construct each one with the next.
+2. Though you can't see it, Alice, the `PieChef`, sets a flag on the `Pie` to mark it as `cooked` for Bob, the `DollopDistributor`. Instead of changing the object, we'll have her accept an `UncookedPie` and pass a `CookedPie` to Bob. We then adapt Bob to accept a `CookedPie`. This ensures we can't get the order wrong, as `Bob` will never receive an uncooked pie.
+3. And as for the patron, we'll start off with a `HungryPatron` and have them return a new instance of themselves upon feeding.
 
     @Test public void
     hungryHungryPatrons() {
@@ -501,7 +502,17 @@ Part of the problem with the ordering is that even though Alice gives the next p
         assertThat(happyPatron, hasPie());
     }
 
-Though you can't see it here, `PieChef`'s constructor now takes a `KitchenStaff<CookedPie>` instead of just a `KitchenStaff`.
+Each of our constructors will change too. For example, `PieChef`'s constructor used to look like this:
+
+    public PieChef(KitchenStaff next) {
+        this.next = next;
+    }
+
+And now its parameter specifies the type it accepts:
+
+    public PieChef(KitchenStaff<CookedPie> next) {
+        this.next = next;
+    }
 
 #### Step 3: Separate behaviours.
 
@@ -533,7 +544,7 @@ In this situation, `then` doesn't modify the object directly, but instead return
         }
     }
 
-This has had the side effect of making sure we return a value rather than operating purely on side effects. By doing this, we can ensure that we *always* pass on the value. In situations where we may not want to continue, we can return an `Optional<T>` value, which can contain either something (`Optional.of(value)`) or nothing (`Optional.empty()`).
+To do this, we also have to return a value rather than operating purely on side effects, ensuring that we *always* pass on the value. In situations where we may not want to continue, we can return an `Optional<T>` value, which can contain either something (`Optional.of(value)`) or nothing (`Optional.empty()`).
 
 #### Step 4: Split the domain from the infrastructure.
 
@@ -549,7 +560,7 @@ Now that we have separated the chaining from the construction of the `KitchenSta
         KitchenStaff<UncookedPie, Serving> staff = alice.then(bob).then(carol).then(dan);
 
         Patron hungryPatron = new HungryPatron();
-        Patron happyPatron = staff(new UncookedPie()).forPatron(hungryPatron);
+        Patron happyPatron = staff.prepare(new UncookedPie()).forPatron(hungryPatron);
 
         assertThat(happyPatron, hasPie());
     }
