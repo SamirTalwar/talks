@@ -5,7 +5,8 @@ date: 2014-07-28 17:00:00 +0100
 presentation:
   enabled: true
 video:
-  id: http://youtu.be/KMnv-A-ANP4
+  youtube_id: KMnv-A-ANP4
+  link: http://youtu.be/KMnv-A-ANP4
 ---
 
 ## Introduction

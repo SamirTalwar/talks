@@ -28,7 +28,11 @@
                     &bull; <a class="action link-to-presentation" href="{{ page.presentation.link }}">Presentation</a>
                 {% endif %}
                 {% if page.video %}
-                    &bull; <a class="action show-video" href="http://youtu.be/{{ page.video.id }}">Video</a>
+                    {% if page.video.youtube_id %}
+                        &bull; <a class="action show-video" href="{{ page.video.link }}">Video</a>
+                    {% else %}
+                        &bull; <a href="{{ page.video.link }}">Video</a>
+                    {% endif %}
                 {% endif %}
             </aside>
 
@@ -45,9 +49,9 @@
                 </div>
             </div>
 
-            {% if page.video %}
+            {% if page.video and page.video.youtube_id %}
                 <div class="video-player">
-                    <iframe src="//www.youtube.com/embed/{{ page.video.id }}" frameborder="0" allowfullscreen></iframe>
+                    <iframe src="//www.youtube.com/embed/{{ page.video.youtube_id }}" frameborder="0" allowfullscreen></iframe>
                 </div>
             {% endif %}
 
