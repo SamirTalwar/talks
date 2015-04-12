@@ -59,6 +59,8 @@ It's hard to say. To even begin, we'd need to define "readable".
 
 When dealing with code, the second point is valid—after all, who doesn't want code to be enjoyable?—but the first is paramount. It's clearer when we look at the synonyms: *legible*, *decipherable*, *clear*, *intelligible*, *understandable*, *comprehensible*… these are all characteristics of good code. But while they're good characteristics, they aren't really actionable. How do we *make* code more readable?
 
+### Read It Out Loud
+
 Let's go back to our example:
 
 <table class="vertical">
@@ -140,6 +142,8 @@ That's way nicer. Now we only need one piece of code that executes a `SearchQuer
     }
 
 Turns out that the obvious place to put this behaviour is on the `SearchQuery` type itself. After all, the only thing we can do with a query is run it.
+
+### What Does This Button Do?
 
 When we actually execute this query, we'll get an `Stream<PropertyId>` back. In our make-believe database, IDs are integers, so why not just have an `Stream<Integer>` like in the first example?
 
@@ -268,7 +272,7 @@ Of course, there's more than one function in our system that uses distance; hous
 
 Later, we changed the function signature to take a `Radius` instead of a `double`. This made the code more readable; `Radius.of(0.25, MILES)` has a lot more meaning than `0.25`. But it also provided a place for behaviour to go. The validation is one of them:
 
-    public class Radius {
+    public final class Radius {
         public static Radius of(@NotNull double magnitude, @NotNull DistanceUnit unit) {
             check(magnitude, is(greaterThan(0)));
             return new Radius(magnitude, unit);
@@ -333,7 +337,7 @@ Now, if your code is anything like a lot of the code I've worked on, this will m
 Surely not, right? I mean, no one likes code that looks like this:
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         private final Template PropertyTemplate =
             Template.inClassPath("/com/buymoarflats/website/property-details.html");
 
@@ -380,7 +384,7 @@ __Listen to your types.__ Your code is telling you that you have not adequately 
 Let's try again.
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         private final Template PropertyTemplate =
             Template.inClassPath("/com/buymoarflats/website/property-details.html");
 
@@ -461,7 +465,7 @@ Here, `thing` is not of type `Input`, but `Optional<Input>`. We can assume that 
 So, if `SearchQuery::fetchOne` returns an `Optional<T>` rather than a `T` which might be null, how does that affect our code?
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         private final Template PropertyTemplate =
             Template.inClassPath("/com/buymoarflats/website/property-details.html");
 
@@ -494,7 +498,7 @@ So, if `SearchQuery::fetchOne` returns an `Optional<T>` rather than a `T` which 
 We can even inline all of the methods without issue, and use method references to simplify the code.
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         @GET
         @Path("/{propertyId}")
         public Response propertyDetails(@PathParam("propertyId") PropertyId id) throws DatabaseQueryException {
@@ -528,20 +532,20 @@ We've got bullet points. That means this could probably fit nicely into an enume
 
 We lose information like this, though; by just selecting a value from this enum, we've lost *why* the relevant operation failed. So let's make them full-blown classes instead:
 
-    public class RequestException extends Exception { ... }
+    public abstract class RequestException extends Exception { ... }
 
-    public class ResourceNotFoundException extends RequestException {
+    public final class ResourceNotFoundException extends RequestException {
         public ResourceNotFoundException(ResourceId id) { ... }
     }
 
-    public class DatabaseQueryException extends RequestException { ... }
+    public final class DatabaseQueryException extends RequestException { ... }
 
-    public class TemplateFormattingException extends RequestException { ... }
+    public final class TemplateFormattingException extends RequestException { ... }
 
-They don't *have* to be exceptions, but it's a nice way to bridge the two worlds. Now we can write something that truly handles all edge cases:
+They don't *have* to be exceptions, but it's a nice way to bridge the two worlds. Now we can create a new type that truly handles all edge cases. I'm going to call it [`Either`][Data.Either]. This implementation is fictional, but there are plenty of real implementations with the same name out there.
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         @GET
         @Path("/{propertyId}")
         public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
@@ -556,10 +560,12 @@ They don't *have* to be exceptions, but it's a nice way to bridge the two worlds
         }
     }
 
+[Data.Either]: https://hackage.haskell.org/package/base/docs/Data-Either.html
+
 In the previous snippet, I named some variables so you could see the type signatures. Java type signatures are pretty verbose; fortunately, we can inline the variables and make our lives a lot better.
 
     @Path("/properties")
-    public class PropertiesResource {
+    public final class PropertiesResource {
         @GET
         @Path("/{propertyId}")
         public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
@@ -579,3 +585,128 @@ Generics are an incredibly powerful tool that we can use to tell the compiler ab
 
 ## Performance
 
+There are a number of benchmarks that compare correctness-enforcing types such as Java 8's new `Optional` and implementations of `Either` similar to the one above, and we won't go into them here. Suffice it to say that they do impact performance, but less than you would expect, and I would strongly suggest you don't shy away from them for that reason unless you have measurements of your own that are telling you that those are the bottlenecks.
+
+No, the problem I want to tackle here is a little more subtle, and only occurs over time.
+
+### Build More Features
+
+Let's imagine that we're looking for properties, and we've created a short list:
+
+    Set<ShortListedProperty> shortList = connection
+        .query(query -> query
+            .select()
+            .from(SHORT_LIST)
+            .join(PROPERTY).on(SHORT_LIST.PROPERTY_ID.eq(PROPERTY.ID))
+            .where(SHORT_LIST.USER_ID.eq(user.id())))
+        .map(row -> propertyFrom(row))
+        .fetch()
+        .collect(toSet());
+
+It's a set, because the order was considered unimportant at the domain level when the query was written. But of course, we'd like to show them in the same order each time—the order in which they were added to the list, with the most recent first:
+
+    List<ShortListedProperty> sortedShortList = shortList.stream()
+        .sorted(comparing(ShortListedProperty::dateTimeAdded))
+        .collect(toList());
+
+Of course, at BuyMoarFlats.com, we really prize ourselves on appealing to the real estate mogul, not just the family looking to move to a new neighbourhood, so it's not uncommon for our users to shortlist properties in several cities. They'll want to just see the list in one city at a time when scheduling viewings, so we need to be able to group by city (still sorted, of course).
+
+    Map<City, List<ShortListedProperty>> shortListsByCity = sortedShortList.stream()
+        .collect(groupingBy(ShortListedProperty::city));
+
+Of course, we'll need to show the list of cities on the sidebar so it's easy to jump around:
+
+    Set<City> cities = shortListByCity.keySet();
+
+Oh, one more thing. If properties are up for auction in the next seven days, we'll need to highlight them at the top of the screen so that the user doesn't miss them.
+
+    List<ShortListedProperty> upForAuctionSoon = shortListsByCity.values().stream()
+        .flatMap(Collection::stream) // to flatten the lists
+        .filter(property -> property.isUpForAuctionInLessThan(1, WEEK))
+        .collect(toList());
+
+But we don't just want to show the shortlisted auctions! Sure, those should be there, but if there's an auction and the seller is paying us for extra advertising, we need to throw it in.
+
+    Stream<Property> randomPromotedAuction = connection
+        .query(query -> query
+            .select()
+            .from(PROPERTY)
+            .where(PROPERTY.SALE_TYPE.eq(PropertySaleType.AUCTION))
+            .and(PROPERTY.PROMOTED.eq(true))
+            .limit(1))
+        .fetch();
+
+    List<Property> highlighted = Stream.concat(randomPromotedAuction, upForAuctionSoon.stream())
+        .collect(toList());
+
+And we've got more features coming every week!
+
+### And Build Them Well
+
+I expect you see the problem. We have lots of different ways that we represent this data, but it's disjointed and piecemeal. This is maintenance catastrophe of the same ilk as we saw in the section on *Readability*, where we wrapped the property ID in a class to remove behaviour and provide a place for the few behaviours we needed. And we can solve it in the same way:
+
+    public final class ShortList {
+        private final Set<ShortListedProperty> shortList;
+        private final List<ShortListedProperty> sortedShortList;
+        private final Map<City, ShortListedProperty> shortListsByCity;
+        private final Set<City> cities;
+        private final List<ShortListedProperty> upForAuctionSoon;
+        private final Optional<Property> randomPromotedAuction;
+        private final List<Property> highlighted;
+
+        ...
+    }
+
+We've wrapped all of the different pieces of information that make up our short list page in one place. This is much nicer from a design perspective, as it unites what was previously a fairly haphazard set of data, but it also gives us a great opportunity to recognise the obvious performance problem. Previously, the functions that construct the lists, sets and maps would have been scattered; now, they'll all live in the same class, and we can easily recognise when whe're doing work unnecessarily, even when we haven't worked on this area of the codebase in weeks.
+
+We're working in Java 8 now, so each time we process a collection, the first thing we do is turn it into a `Stream<T>` using the `.stream()` method. Beforehand, we'd write a for-each loop that iterates over the collection, which constructs an `Iterator<T>` internally and ends up doing basically the same thing. This means that whether you're using loops, functional methods on your collection, [LINQ][] or anything else, you're still doing more work than you need to be.
+
+So, we need to stop constructing new collections for each stage of the pipeline. The only three outputs here are *shorListsByCity*, *cities* and *highlighted*; everything else is an intermediary which is no longer used outside this one class. This means that we can inline them, keeping them as streams and not bothering to `collect(toList())`. Streams, just like many collections in Scala or the output of LINQ expressions in C#, are lazy,in that they are only processed once and only when you actually evaluate them. The new code will look something like this:
+
+    public final class ShortList {
+        public static ShortList from(DatabaseConnection conection) {
+            Map<City, ShortListedProperty> shortListByCity = connection
+                .query(query -> query
+                    .select()
+                    .from(SHORT_LIST)
+                    .join(PROPERTY).on(SHORT_LIST.PROPERTY_ID.eq(PROPERTY.ID))
+                    .where(SHORT_LIST.USER_ID.eq(user.id()))
+                    .orderBy(SHORT_LIST.DATE_TIME_ADDED))
+                .map(row -> propertyFrom(row))
+                .fetch()
+                .collect(grouping(ShortListedProperty::city));
+
+            List<ShortListedProperty> upForAuctionSoon = shortListsByCity.values().stream()
+                .flatMap(Collection::stream) // to flatten the lists
+                .filter(property -> property.isUpForAuctionInLessThan(1, WEEK))
+
+            Stream<Property> randomPromotedAuction = connection ...
+
+            List<Property> highlighted = Stream.concat(randomPromotedAuction, upForAuctionSoon)
+                .collect(toList());
+
+            return new ShortList(shortListByCity, highlighted);
+        }
+
+        ...
+
+        public Output format() {
+            ...
+        }
+    }
+
+Instead of processing the properties five times, we did it twice, purely because we got some more visibility on the situation. We even managed to offload some work onto the database. This is the power of a *behaviour attractor*, especially when refactoring legacy code that's scattered about.
+
+[LINQ]: https://msdn.microsoft.com/en-us/library/bb397926.aspx
+
+## In Conclusion
+
+We tackled four discrete problems, but the solution has always been the same in every one of these cases. In each case, the need for a simpler design led us to create a new type. Sometimes we made types that wrapped data, in the case of `CircularArea`, `PropertyId` and `ShortList`, among others. This was to protect the data from easy access and manipulation, reducing the scope. Other times, we extracted behaviour, creating `Optional` and `Either` types to make explicit behaviour that was previously hidden by the vagaries of Java and languages like it.
+
+In every case, our types became behaviour attractors, pulling in logic that was previously scattered (and often duplicated) everywhere. In this, we achieved [the holy grail][Putting an Age-Old Battle to Rest], removing duplication *and* increasing clarity. To keep them that way, we made sure not to expose the data in a general fashion, but only in order to fulfill the specific goals of that object.
+
+Our code became more __readable__, __flexible__, __correct__ and, surprisingly, more __performant__ too. While I can't promise that will happen every time, I can tell you it's worked for me far more often than not.
+
+So what are you waiting for? Go wrap some data in some brand new types.
+
+[Putting an Age-Old Battle to Rest]: http://blog.thecodewhisperer.com/2013/12/07/putting-an-age-old-battle-to-rest/
