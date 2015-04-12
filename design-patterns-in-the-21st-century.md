@@ -9,8 +9,6 @@ video:
 
 code:
   language: java
-
-redirect_from: /
 ---
 
 ## Introduction

@@ -1,0 +1,581 @@
+---
+layout: default
+title: Use Your Type System; Write Less Code
+date: 2015-04-17 15:40:00 +0100
+
+code:
+  language: java
+
+redirect_from: /
+---
+
+## Readability
+
+To steal a trick from [the folks at REA][The abject failure of weak typing], what's more readable?
+
+[The abject failure of weak typing]: http://techblog.realestate.com.au/the-abject-failure-of-weak-typing/
+
+This function, taken from my brand new website, *buymoarflats.com*:
+
+    public Stream<Integer> searchForProperties(
+            boolean renting,
+            int monthlyBudget,
+            double latitude,
+            double longitude,
+            double distanceFromCentre) { ... }
+
+Or this?
+
+    public Stream<PropertyId> abc(
+            PurchasingType def,
+            Budget ghi,
+            Coordinate jkl,
+            Radius mno) { ... }
+
+It's hard to say. To even begin, we'd need to define "readable".
+
+> __readable__
+> /ˈriːdəb(ə)l/
+> *adjective*
+>
+> 1. able to be read or deciphered; legible.
+>    "a code which is readable by a computer"
+>    <dl>
+>        <dt>synonyms:</dt>
+>        <dd>legible, easy to read, decipherable, easily deciphered, clear, intelligible, understandable, comprehensible, easy to understand<br/>
+>            "the inscription is still perfectly readable"</dd>
+>        <dt>antonyms:</dt>
+>        <dd>illegible, indecipherable</dd>
+>    </dl>
+> 2. easy or enjoyable to read.
+>    "a marvellously readable book"
+>    <dl>
+>        <dt>synonyms:</dt>
+>        <dd>enjoyable, entertaining, interesting, absorbing, engaging, gripping, enthralling, engrossing, compulsive, stimulating; worth reading, well written; <em>informal</em> unputdownable<br/>
+>            "her novels are immensely readable"</dd>
+>        <dt>antonyms:</dt>
+>        <dd>boring, unreadable</dd>
+>    </dl>
+
+When dealing with code, the second point is valid—after all, who doesn't want code to be enjoyable?—but the first is paramount. It's clearer when we look at the synonyms: *legible*, *decipherable*, *clear*, *intelligible*, *understandable*, *comprehensible*… these are all characteristics of good code. But while they're good characteristics, they aren't really actionable. How do we *make* code more readable?
+
+Let's go back to our example:
+
+<table class="vertical">
+    <tr>
+        <th>&nbsp;</th>
+        <th>first</th>
+        <th>second</th>
+    </tr>
+    <tr>
+        <th>return type</th>
+        <td><code class="language-java">Stream&lt;Integer&gt;</code></td>
+        <td><code class="language-java">Stream&lt;PropertyId&gt;</code></td>
+    </tr>
+    <tr>
+        <th>name</th>
+        <td><code class="language-java">searchForProperties</code></td>
+        <td><em>irrelevant</em></td>
+    </tr>
+    <tr>
+        <th>buying or renting?</th>
+        <td><code class="language-java">boolean renting</code></td>
+        <td><code class="language-java">PurchasingType</code></td>
+    </tr>
+    <tr>
+        <th>monthly budget</th>
+        <td><code class="language-java">int monthlyBudget</code></td>
+        <td><code class="language-java">Budget</code></td>
+    </tr>
+    <tr>
+        <th>centre coordinates</th>
+        <td><code class="language-java">double latitude, double longitude</code></td>
+        <td><code class="language-java">Coordinate</code></td>
+    </tr>
+    <tr>
+        <th>maximum distance</th>
+        <td><code class="language-java">double distanceFromCentre</code></td>
+        <td><code class="language-java">Radius</code></td>
+    </tr>
+</table>
+
+We can see here that both have their problems. The second doesn't give us enough information: it tells us what it needs, but not why. Most of it can be inferred from the types, but there's a little left that is up to the user to figure out. The first, on the other hand, tells us what it needs but is open to abuse. What happens if I tell it my monthly budget is negative, or if the latitude is out of bounds? Can it handle a negative maximum distance from the centre point?
+
+It's also way harder to read, not at the point of declaration, but at the point of usage. Let's see how we use the first one:
+
+    Stream<Integer> searchResults = searchForProperties(
+            true, 500, 51.525094, -0.127305, 2);
+
+Now, what on earth do all those numbers mean? And even when we've figured out, there's more to do. Is the budget in GBP or something else? What about the distance? Is that 2 miles? 2 kilometres? Furlongs? And what does it return? Integers? Are they house numbers?
+
+Compare to the version with more restrictive types:
+
+    Stream<PropertyId> searchResults = searchForProperties(
+            PropertyType.RENTAL,
+            MonthlyBudget.of(500, GBP),
+            Coordinate.of(51.525094, -0.127305),
+            Radius.of(2, MILES));
+
+That's *way* more readable. But there's still something missing here. We can see it fairly easily in the last two parameters to this function. We're giving it coordinates and a radius, but really we're interested in only finding properties within a specific *area*, which happens to be a circle. This is both too restrictive—lots of property sites let you draw your own search boundaries on a map now—and not descriptive enough. If it's an area, let's take an `Area`!
+
+    Stream<PropertyId> searchResults = searchForProperties(
+            PropertyType.RENTAL,
+            MonthlyBudget.of(500, GBP),
+            CircularArea.around(Coordinate.of(51.525094, -0.127305)
+                        .with(Radius.of(2, MILES)));
+
+This gets me thinking, though. All of these properties are facets of the thing we're looking for. Together, they make up a *search query*. We're constructing the search query *and* executing the query in the same place. I'd like to construct a search query here, and let something else actually run the query.
+
+    public SearchQuery<PropertyId> searchForProperties(
+            PurchasingType purchasingType,
+            Budget budget,
+            Area area) { ... }
+
+That's way nicer. Now we only need one piece of code that executes a `SearchQuery` and brings back all the results.
+
+    public interface SearchQuery<T> {
+        public Stream<T> fetch();
+
+        public T fetchOne();
+    }
+
+Turns out that the obvious place to put this behaviour is on the `SearchQuery` type itself. After all, the only thing we can do with a query is run it.
+
+When we actually execute this query, we'll get an `Stream<PropertyId>` back. In our make-believe database, IDs are integers, so why not just have an `Stream<Integer>` like in the first example?
+
+`PropertyId` wraps an integer, like so:
+
+    public final class PropertyId {
+        private final int value;
+
+        public PropertyId(int value) {
+            this.value = value;
+        }
+
+        public SearchQuery<Property> query(DatabaseConnection connection) { ... }
+
+        public void renderTo(Somewhere else) { ... }
+
+        // equals, hashCode and toString
+    }
+
+It has two methods. The first, `query`, creates a `SearchQuery` that fetches the entire `Property` object, which is useful when querying for an exact property on our website. For example, when a flat hunter is looking at search results and clicks on one for more information, their browser will head to *https://buymoarflats.com/properties/12345*, which will take that ID and get all of the relevant information about the property. The second method renders the property ID to another object which is designed to display the information; for example, a `Hyperlink` object whose job it is to link to the property ID.
+
+Oh, and it's got four more pieces of functionality:
+
+  * conversion from an integer (via the constructor)
+  * conversion to a string (the `toString` method)
+  * equality (`equals`, so we can check whether two property IDs are the same)
+  * hashing (`hashCode`, so we can use it in a hash-based collection such as `HashMap`)
+
+So it has six pieces of behaviour. How many does `int` have?
+
+Let's list them.
+
+  * addition
+  * multiplication
+  * subtraction
+  * division
+  * modulus
+  * negation
+  * bit manipulation operations such as `&`, `|`, `^` and `~`
+  * further bit manipulation functionality from [`java.lang.Integer`][java.lang.Integer] (I count 9 separate methods)
+  * equality
+  * hashing
+  * comparison with other integers
+  * treatment as an unsigned integer
+  * treatment as a sign (the `Integer.signum` function returns a value representing negative, positive or zero)
+  * conversion to and from other number types (such as `double`)
+  * conversion to and from strings in decimal, hexadecimal, octal and binary
+  * all of the other methods on `java.lang.Integer`
+
+That's a *lot*. When we see an `int` or an `Integer`, we don't know which subset of that list we're actually using. This makes them __hard to understand__; we have to infer a lot from the variable or method name in order to figure out how it will be used. We can probably assume that we're not performing bit operations on an `int id` or dividing it by 7, but you can't be sure. More seriously, we don't know if we're serializing it to a string in decimal, in hex, in base-64 or anything else. We can't tell if we're using it as an odd kind of sorting mechanism in place of listing date or something, and we have no idea if it's being accidentally converted to a floating point number elsewhere due to Java's automatic number conversion.
+
+[java.lang.Integer]: https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html
+
+By encapsulating the integer in a `PropertyId`, we're conveying more information about what it is and what it can do. But more importantly, we're specifying what it *can't* do, which helps us clarify its purpose. I can read the name of the type and instantly know why it's there and how it's used.
+
+It becomes more readable.
+
+
+## Flexibility
+
+Remember our `searchForProperties` method?  It constructs a search query. Let's expand its implementation.
+
+    public SearchQuery<PropertyId> searchForProperties(PurchasingType purchasingType, Budget budget, Area area) {
+        Area rectangle = area.asRectangle();
+        return connection
+            .query(query -> query
+                .select()
+                .from(PROPERTY)
+                .where(PROPERTY.PURCHASING_TYPE.equal(purchasingType.name()))
+                .and(PROPERTY.BUDGET.lessOrEqual(budget.inPounds()))
+                .and(PROPERTY.LONGITUDE.between(rectangle.minX()).and(rectangle.maxX()))
+                .and(PROPERTY.LATITUDE.between(rectangle.minY()).and(rectangle.maxY())))
+            .filter(row -> area.contains(row.getValue(PROPERTY.LATITUDE), row.getValue(PROPERTY.LANGITUDE)))
+            .map(row -> new PropertyId(row.getValue(PROPERTY.ID)));
+    }
+
+That particular function searches for `PropertyId` objects by building a query up using the [jOOQ][] API (which it keeps encapsulated in a lambda), then applies a couple of post-processing steps that resemble the Java 8 Streams interface.
+
+[jOOQ]: http://www.jooq.org/
+
+One of the things it makes sure to do is to extract the ID (as an integer), then convert the raw integers to objects of type `PropertyId` at the end of the operation. That's how we are, in this fictional code, returning `PropertyId` objects straight from the fetch operation.
+
+What if we start using Cassandra instead of MySQL?
+
+We just switch up the internals. No one has to know!
+
+    public final class PropertyId {
+        private final UUID value;
+        private final int humanRepresentation;
+
+        public PropertyId(UUID value, int humanRepresentation) {
+            this.value = value;
+            this.humanRepresentation = humanRepresentation;
+        }
+
+        ...
+    }
+
+Alright, *somebody* has to know, but because we've kept the actual ID internal to the state, only escaping in a few constrained situations, we've massively limited the number of places in our codebase that need to change. And by keeping the integer representation, we can even keep the same URL structure.
+
+There's clearly a win here, when dealing with strict value types, but it's also beneficial to encapsulate objects that work primarily with side effects. For example, our `SearchQuery` type. We could use jOOQ or another query builder API directly, but encapsulating it means that switching to Cassandra and using *its* query builder only requires changing the parts of the codebase concerned with the database: namely, the queries themselves.
+
+In our previous example, the query will work equally well in MySQL and Cassandra, so nothing needs to be done except in the last step when constructing the `PropertyId` object. For the rest, w can just trust that the implementation of `CassandraSearchQuery` will take care of it.
+
+
+## Correctness
+
+In 2014, Corey Haines came up with a term that's been missing from the software craftsmanship dictionary: __behaviour attractor__. Often, when pulling out a new type from our codebase, we find that methods and functions that weren't really in the right place (often, private or static methods) now have a place to go, and so they naturally gravitate toward those new types during refactoring. The *behaviour* is *attracted* to the new type.
+
+The simplest example of this is validation. In our first example, we had a function that ran a search query for properties. As part of this, it had to limit the search to a specific distance from a centre point. We asked ourselve earlier what would happen if the distance was somehow negative. Well, we check for it:
+
+    public Stream<Integer> searchForProperties(
+            boolean renting,
+            int monthlyBudget,
+            double latitude,
+            double longitude,
+            double distanceFromCentre) {
+
+        check(distanceFromCentre, is(greaterThan(0)));
+        ...
+    }
+
+Of course, there's more than one function in our system that uses distance; houses and flats are strongly tied to geography, it turns out. We've managed to knock down the validation to one line thanks to clever use of [Hamcrest matchers][Hamcrest], but it's still too easy to forget that one line. We need to do better.
+
+[Hamcrest]: https://github.com/hamcrest/JavaHamcrest
+
+Later, we changed the function signature to take a `Radius` instead of a `double`. This made the code more readable; `Radius.of(0.25, MILES)` has a lot more meaning than `0.25`. But it also provided a place for behaviour to go. The validation is one of them:
+
+    public class Radius {
+        public static Radius of(@NotNull double magnitude, @NotNull DistanceUnit unit) {
+            check(magnitude, is(greaterThan(0)));
+            return new Radius(magnitude, unit);
+        }
+
+        private Radius(@NotNull double magnitude, @NotNull DistanceUnit unit) { ... }
+
+        ...
+    }
+
+In our named constructor, we do the check. We can't forget. It's done in one place, tested once, and then left alone. Using the type system, we've made sure that the value is *always* checked. Validation's one of those things where trusting human beings is going to lead to trouble; instead, let's trust the computer.
+
+### Error Visibility
+
+Another area in which we are currently trusting humans is one I've been hiding from you up to now.
+
+    /**
+     * Searches for properties in the database matching the specified parameters.
+     *
+     * @param renting True if renting, false if buying.
+     * ...
+     * @return A stream of property IDs.
+     * @throws DatabaseQueryException if there is a connection error.
+     */
+    public Stream<Integer> searchForProperties(
+            boolean renting,
+            int monthlyBudget,
+            double latitude,
+            double longitude,
+            double distanceFromCentre) { ... }
+
+I don't like comments. One of the many benefits of cleaning up that function by encapsulating the parameters is that it doesn't need any of of the Javadoc any more. Everything that used to be documented in the comments is now documented in the types.
+
+However, there's one thing that still needs Javadoc:
+
+    public interface SearchQuery<T> {
+        /**
+         * @throws DatabaseQueryException if there is a connection error.
+         */
+        public Stream<T> fetch();
+
+        /**
+         * @throws DatabaseQueryException if there is a connection error.
+         */
+        public T fetchOne();
+    }
+
+We need to report a query failure. We could made `DatabaseQueryException` a checked exception; that should do the trick.
+
+    public interface SearchQuery<T> {
+        public Stream<T> fetch() throws DatabaseQueryException;
+
+        public T fetchOne() throws DatabaseQueryException;
+    }
+
+Again, we're using the type system to convey more information to the compiler so it can help us write better code. It's no longer up to the human to decide whether the exception should be handled or not, which means it can't be forgotten. The only problem is that we now need to add `throws DatabaseQueryException` all the way up the call chain until we can handle it, which is probably done at the level of the request handler.
+
+Now, if your code is anything like a lot of the code I've worked on, this will mean adding `throws DatabaseQueryException` __everywhere__. In my mind, this is a good thing.
+
+*/me pauses for shock*
+
+Surely not, right? I mean, no one likes code that looks like this:
+
+    @Path("/properties")
+    public class PropertiesResource {
+        private final Template PropertyTemplate =
+            Template.inClassPath("/com/buymoarflats/website/property-details.html");
+
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") int id) {
+            try {
+                return propertyResponse(new PropertyId(id));
+            } catch (DatabaseQueryException e) {
+                return Response.serverError().entity(e).build();
+            }
+        }
+
+        private Response propertyResponse(PropertyId id) throws DatabaseQueryException {
+            Output output = formattedProperty(id);
+            if (output == null) {
+                return Response.notFound().entity(id).build();
+            }
+            return Response.ok(output).build();
+        }
+
+        private Output formattedProperty(PropertyId id) throws DatabaseQueryException {
+            Property property = retrieveProperty(id);
+            if (property == null) {
+                return null;
+            }
+            return PropertyTemplate.format(property);
+        }
+
+        private Property retrieveProperty(PropertyId id) throws DatabaseQueryException {
+            return id.query(connection).fetchOne();
+        }
+    }
+
+This code is pretty ugly. Every single helper method can throw a checked exception, which quickly translates into lots of visual noise. But that's not a bad thing in itself.
+
+[Steve Freeman and Nat Pryce][Growing Object-Oriented Software] are fond of the saying, ["listen to your tests"][Listening to Tests]. By this, they mean that when your tests are long, ugly or hard to comprehend, they're probably telling you that you're missing something in the production code that would make things a lot better for you.
+
+__Listen to your types.__ Your code is telling you that you have not adequately decoupled your database from your business logic.
+
+[Growing Object-Oriented Software]: http://www.growing-object-oriented-software.com/
+[Listening to Tests]: http://pivotallabs.com/growing-software/
+
+Let's try again.
+
+    @Path("/properties")
+    public class PropertiesResource {
+        private final Template PropertyTemplate =
+            Template.inClassPath("/com/buymoarflats/website/property-details.html");
+
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
+            try {
+                return propertyResponse(id, formattedProperty(retrieveProperty(id)));
+            } catch (DatabaseQueryException e) {
+                return Response.serverError().entity(e).build();
+            }
+        }
+
+        private Response propertyResponse(PropertyId id, Output output) {
+            if (output == null) {
+                return Response.notFound().entity(id).build();
+            }
+            return Response.ok(output).build();
+        }
+
+        private Output formattedProperty(Property property) {
+            if (property == null) {
+                return null;
+            }
+            return PropertyTemplate.format(property);
+        }
+
+        private Property retrieveProperty(PropertyId id) throws DatabaseQueryException {
+            return id.query(connection).fetchOne();
+        }
+    }
+
+By rearranging the order of the calls such that the database query happens only one level down from the top, we've limited the number of methods that throw a database exception to two. We can tell, using our previous metric, that this code is better, at least in this respect; by listening to our types and letting our method signatures telling us that something was wrong, we were able to produce code which was better decoupled from the database. This means that we coule extract out the formatting and response construction into a different class without any problems, as they're not touching the database call at all, increasing the flexibility but also the robustness of the code.
+
+Code that doesn't touch the database can't fail due to a database error, after all.
+
+### Optional Values
+
+We've simplified our code by eliminating error cases, and in doing so, made chunks of it more robust. However, there's some duplication in there that is still stressing me out.
+
+Two of our helper methods accept the possibility of `null` input, and two also return `null` in the case where there is no property by that ID. This is manageable for now, but it requires a bunch of extra test cases to ensure that the code works correctly, and means we have to be very careful about adding extra behaviour, in that we have to do more of this:
+
+    public Output process(Input thing) {
+        if (thing == null) {
+            return null;
+        }
+        ...
+    }
+
+Ick.
+
+That sort of thing is duplication of the most profane sort. So let's follow the [four rules of simple design][XP Simplicity Rules] and get rid of it. Let's see, hmmm… where's my Extract Method button?
+
+Oh, wait. We can't just extract it, because it's not a complete piece of behaviour in its own right. Down one branch, it returns, but the other (implicit) branch is just the rest of the method. So really we want to extract out this construct:
+
+    public Output process(Input thing) {
+        if (thing == null) {
+            return null;
+        } else {
+            ...
+        }
+    }
+
+The only problem is that the `...` is a big deal. In fact, it's the point of the method, and therefore it's not going to share much with any other method which has a null check at the beginning. So what can we do about it?
+
+Well. It doesn't share behaviour, that's for sure. But it does share structure. Its input is always our `thing`, which we now know to be non-null, and it outputs a single value. So let's borrow some thinking from the functional programming world and extract it out.
+
+    public Optional<Output> process(Optional<Input> thing) {
+        return thing.map(value -> {
+            ...
+        });
+    }
+
+Here, `thing` is not of type `Input`, but `Optional<Input>`. We can assume that the reference is non-null, as you should *never* have a null `Optional` reference, and it has a bunch of methods designed to make it easy to use without ever asking it if there really is a value or not. `Optional`, sometimes called *Maybe* or *Option* in other languages, is a wrapper around the behaviour traditionally associated (in C-like languages) with `null` and null checks.
+
+[XP Simplicity Rules]: http://c2.com/cgi/wiki?XpSimplicityRules
+
+So, if `SearchQuery::fetchOne` returns an `Optional<T>` rather than a `T` which might be null, how does that affect our code?
+
+    @Path("/properties")
+    public class PropertiesResource {
+        private final Template PropertyTemplate =
+            Template.inClassPath("/com/buymoarflats/website/property-details.html");
+
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) throws DatabaseQueryException {
+            try {
+                return propertyResponse(id, retrieveProperty(id).map(this::formattedProperty));
+            } catch (DatabaseQueryException e) {
+                return Response.serverError().entity(e).build();
+            }
+        }
+
+        private Response propertyResponse(PropertyId id, Optional<Output> maybeOutput) {
+            return maybeOutput
+                .map(output -> Response.ok(output))
+                .orElse(Response.notFound().entity(id))
+                .build();
+        }
+
+        private Output formattedProperty(Property property) {
+            return PropertyTemplate.format(property);
+        }
+
+        private Optional<Property> retrieveProperty(PropertyId id) throws DatabaseQueryException {
+            return id.query(connection).fetchOne();
+        }
+    }
+
+We can even inline all of the methods without issue, and use method references to simplify the code.
+
+    @Path("/properties")
+    public class PropertiesResource {
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) throws DatabaseQueryException {
+            try {
+                return id.query(connection).fetchOne()
+                    .map(PropertyTemplate::format)
+                    .map(Response::ok)
+                    .orElse(Response.notFound().entity(id))
+                    .build();
+            } catch (DatabaseQueryException e) {
+                return Response.serverError().entity(e).build();
+            }
+        }
+    }
+
+### Robust Failure Handling
+
+There's still one problem with this code. The world of `Optional` doesn't mesh well with the world of exceptions, and so when I change the signature of `Template::format` to signal that it can throw the checked exception `TemplateFormattingException`, I can no longer use it as is in my transformation of my `Optional<Property>`. One way to mitigate this is to use a type that can represent success or failure, where the actual value of the latter can be one of a number of failure scenarios:
+
+  * there was no property found with the given ID
+  * the database query failed
+  * formatting the property using the template failed
+
+We've got bullet points. That means this could probably fit nicely into an enumeration:
+
+    enum RequestFailure {
+        ResourceNotFound,
+        DatabaseQueryFailure,
+        TemplateFormattingFailure
+    }
+
+We lose information like this, though; by just selecting a value from this enum, we've lost *why* the relevant operation failed. So let's make them full-blown classes instead:
+
+    public class RequestException extends Exception { ... }
+
+    public class ResourceNotFoundException extends RequestException {
+        public ResourceNotFoundException(ResourceId id) { ... }
+    }
+
+    public class DatabaseQueryException extends RequestException { ... }
+
+    public class TemplateFormattingException extends RequestException { ... }
+
+They don't *have* to be exceptions, but it's a nice way to bridge the two worlds. Now we can write something that truly handles all edge cases:
+
+    @Path("/properties")
+    public class PropertiesResource {
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
+            Either<RequestException, Property> property = id.query(connection).fetchOne();
+            Either<RequestException, Output> output = property.then(PropertyTemplate::format);
+
+            output
+                .map(Response::ok)
+                .on(ResourceNotFoundException.class, e -> Response.notFound().entity(id))
+                .failWith(e -> Response.serverError().entity(e))
+                .build();
+        }
+    }
+
+In the previous snippet, I named some variables so you could see the type signatures. Java type signatures are pretty verbose; fortunately, we can inline the variables and make our lives a lot better.
+
+    @Path("/properties")
+    public class PropertiesResource {
+        @GET
+        @Path("/{propertyId}")
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
+            id.query(connection).fetchOne()
+                .then(PropertyTemplate::format)
+                .map(Response::ok)
+                .on(ResourceNotFoundException.class, e -> Response.notFound().entity(id))
+                .failWith(e -> Response.serverError().entity(e))
+                .build();
+        }
+    }
+
+The API of this `Either` type takes some getting used to. All you really need to remember is that the result is *either* a success or a failure, with the success type on the right-hand side of the type signature. Once you've got your head around all the lambdas, you can follow the types to see that we really do handle all possible edge cases.
+
+Generics are an incredibly powerful tool that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing exceptions whwnever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
+
+
+## Performance
+
