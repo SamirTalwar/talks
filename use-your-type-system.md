@@ -32,7 +32,7 @@ Or this?
             Coordinate jkl,
             Radius mno) { ... }
 
-It's hard to say. To even begin, we'd need to define "readable".
+It's hard to say; neither of them are great. To even begin, we'd need to define "readable".
 
 > __readable__
 > /ˈriːdəb(ə)l/
@@ -123,7 +123,7 @@ That's *way* more readable. But there's still something missing here. We can see
     Stream<PropertyId> searchResults = searchForProperties(
             PropertyType.RENTAL,
             MonthlyBudget.of(500, GBP),
-            CircularArea.around(Coordinate.of(51.525094, -0.127305)
+            CircularArea.around(Coordinate.of(51.525094, -0.127305))
                         .with(Radius.of(2, MILES)));
 
 This gets me thinking, though. All of these properties are facets of the thing we're looking for. Together, they make up a *search query*. We're constructing the search query *and* executing the query in the same place. I'd like to construct a search query here, and let something else actually run the query.
@@ -216,7 +216,7 @@ Remember our `searchForProperties` method?  It constructs a search query. Let's 
                 .and(PROPERTY.BUDGET.lessOrEqual(budget.inPounds()))
                 .and(PROPERTY.LONGITUDE.between(rectangle.minX()).and(rectangle.maxX()))
                 .and(PROPERTY.LATITUDE.between(rectangle.minY()).and(rectangle.maxY())))
-            .filter(row -> area.contains(row.getValue(PROPERTY.LATITUDE), row.getValue(PROPERTY.LANGITUDE)))
+            .filter(row -> area.contains(row.getValue(PROPERTY.LATITUDE), row.getValue(PROPERTY.LONGITUDE)))
             .map(row -> new PropertyId(row.getValue(PROPERTY.ID)));
     }
 
@@ -471,7 +471,7 @@ So, if `SearchQuery::fetchOne` returns an `Optional<T>` rather than a `T` which 
 
         @GET
         @Path("/{propertyId}")
-        public Response propertyDetails(@PathParam("propertyId") PropertyId id) throws DatabaseQueryException {
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
             try {
                 return propertyResponse(id, retrieveProperty(id).map(this::formattedProperty));
             } catch (DatabaseQueryException e) {
@@ -501,7 +501,7 @@ We can even inline all of the methods without issue, and use method references t
     public final class PropertiesResource {
         @GET
         @Path("/{propertyId}")
-        public Response propertyDetails(@PathParam("propertyId") PropertyId id) throws DatabaseQueryException {
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
             try {
                 return id.query(connection).fetchOne()
                     .map(PropertyTemplate::format)
@@ -580,7 +580,7 @@ In the previous snippet, I named some variables so you could see the type signat
 
 The API of this `Either` type takes some getting used to. All you really need to remember is that the result is *either* a success or a failure, with the success type on the right-hand side of the type signature. Once you've got your head around all the lambdas, you can follow the types to see that we really do handle all possible edge cases.
 
-Generics are an incredibly powerful tool that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing exceptions whwnever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
+Generics are an incredibly powerful tool that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing exceptions whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
 
 
 ## Performance
@@ -648,7 +648,7 @@ I expect you see the problem. We have lots of different ways that we represent t
     public final class ShortList {
         private final Set<ShortListedProperty> shortList;
         private final List<ShortListedProperty> sortedShortList;
-        private final Map<City, ShortListedProperty> shortListsByCity;
+        private final Map<City, List<ShortListedProperty>> shortListsByCity;
         private final Set<City> cities;
         private final List<ShortListedProperty> upForAuctionSoon;
         private final Optional<Property> randomPromotedAuction;
@@ -665,7 +665,7 @@ So, we need to stop constructing new collections for each stage of the pipeline.
 
     public final class ShortList {
         public static ShortList from(DatabaseConnection conection) {
-            Map<City, ShortListedProperty> shortListByCity = connection
+            Map<City, List<ShortListedProperty>> shortListByCity = connection
                 .query(query -> query
                     .select()
                     .from(SHORT_LIST)
