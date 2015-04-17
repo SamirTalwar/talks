@@ -354,7 +354,6 @@ Which can be simplified further to this:
     tasks.forEach(executor::execute);
 
 Java 8 has made adapters so much simpler that I hesitate to call them a pattern any more. The concept is still very important; by explicitly creating adapters, we can keep these two worlds separate except at defined boundary points. The implementations, though? They're just functions.
-{:.notes}
 
 ### The Chain of Responsibility pattern
 
