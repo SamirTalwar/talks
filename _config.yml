@@ -1,4 +1,3 @@
-name: Highly Strung
 markdown: kramdown
 kramdown:
   input: GFM
