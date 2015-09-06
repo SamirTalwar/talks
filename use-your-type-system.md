@@ -543,7 +543,7 @@ We can even inline all of the methods without issue, and use method references t
 Generics and checked exceptiosn are incredibly powerful tools that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing uncontrollably whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
 
 
-## Performance
+## Efficiency
 
 There are a number of benchmarks that compare correctness-enforcing types such as Java 8's new `Optional` and implementations of `Either` similar to the one above, and we won't go into them here. Suffice it to say that they do impact performance, but less than you would expect, and I would strongly suggest you don't shy away from them for that reason unless you have measurements of your own that are telling you that those are the bottlenecks.
 
@@ -617,7 +617,7 @@ I expect you see the problem. We have lots of different ways that we represent t
         ...
     }
 
-We've wrapped all of the different pieces of information that make up our short list page in one place. This is much nicer from a design perspective, as it unites what was previously a fairly haphazard set of data, but it also gives us a great opportunity to recognise the obvious performance problem. Previously, the functions that construct the lists, sets and maps would have been scattered; now, they'll all live in the same class, and we can easily recognise when whe're doing work unnecessarily, even when we haven't worked on this area of the codebase in weeks.
+We've wrapped all of the different pieces of information that make up our short list page in one place. This is much nicer from a design perspective, as it unites what was previously a fairly haphazard set of data, but it also gives us a great opportunity to recognise the obvious efficiency problem. Previously, the functions that construct the lists, sets and maps would have been scattered; now, they'll all live in the same class, and we can easily recognise when whe're doing work unnecessarily, even when we haven't worked on this area of the codebase in weeks.
 
 We're working in Java 8 now, so each time we process a collection, the first thing we do is turn it into a `Stream<T>` using the `.stream()` method. Beforehand, we'd write a for-each loop that iterates over the collection, which constructs an `Iterator<T>` internally and ends up doing basically the same thing. This means that whether you're using loops, functional methods on your collection, [LINQ][] or anything else, you're still doing more work than you need to be.
 
@@ -666,7 +666,7 @@ We tackled four discrete problems, but the solution has always been the same in 
 
 In every case, our types became behaviour attractors, pulling in logic that was previously scattered (and often duplicated) everywhere. In this, we achieved [the holy grail][Putting an Age-Old Battle to Rest], removing duplication *and* increasing clarity. To keep them that way, we made sure not to expose the data in a general fashion, but only in order to fulfill the specific goals of that object.
 
-Our code became more __readable__, __flexible__, __correct__ and, surprisingly, more __performant__ too. While I can't promise that will happen every time, I can tell you it's worked for me far more often than not.
+Our code became more __readable__, __flexible__, __correct__ and, surprisingly, more __efficient__ too. While I can't promise that will happen every time, I can tell you it's worked for me far more often than not.
 
 So what are you waiting for? Go wrap some data in some brand new types.
 
