@@ -206,6 +206,11 @@ Let's list them.
   * conversion to and from strings in decimal, hexadecimal, octal and binary
   * all of the other methods on `java.lang.Integer`
 
+For comparison, here's a Venn diagram of them both:
+
+![`PropertyId` overlapped with `int`](assets/images/use-your-type-system/propertyid-venn-diagram.png)
+{: .image}
+
 That's a *lot*. When we see an `int` or an `Integer`, we don't know which subset of that list we're actually using. This makes them __hard to understand__; we have to infer a lot from the variable or method name in order to figure out how it will be used. We can probably assume that we're not performing bit operations on an `int id` or dividing it by 7, but you can't be sure. More seriously, we don't know if we're serializing it to a string in decimal, in hex, in base-64 or anything else. We can't tell if we're using it as an odd kind of sorting mechanism in place of listing date or something, and we have no idea if it's being accidentally converted to a floating point number elsewhere due to Java's automatic number conversion.
 
 [java.lang.Integer]: https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html
