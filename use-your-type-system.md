@@ -421,6 +421,14 @@ By rearranging the order of the calls such that the database query happens only 
 
 Code that doesn't touch the database can't fail due to a database error, after all.
 
+#### But I don't use Java!
+
+That's OK. Many type-safe languages have other features to take care of this. Scala has the [`Try`][scala.util.Try] data type; Objective-C uses [continuation-passing style with error handlers][iOS Developer Library: Dealing With Errors], and so does node.js. Haskell has [the Exception monad][Control.Monad.Except], which can be confusing to those new to functional programming languages, but has many of the same benefits as checked exceptiosn and fewer of the downsides.
+
+[scala.util.Try]: http://www.scala-lang.org/api/current/#scala.util.Try
+[iOS Developer Library: Dealing With Errors]: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/ErrorHandling/ErrorHandling.html
+[Control.Monad.Except]: https://hackage.haskell.org/package/mtl/docs/Control-Monad-Except.html
+
 ### Optional Values
 
 We've simplified our code by eliminating error cases, and in doing so, made chunks of it more robust. However, there's some duplication in there that is still stressing me out.
