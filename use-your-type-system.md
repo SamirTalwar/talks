@@ -9,6 +9,19 @@ code:
 redirect_from: /
 ---
 
+So I've got this website.
+
+![BuyMoarFlats.com](assets/images/use-your-type-system/buy-moar-flats.png)
+{: .image}
+
+It’s got a lot of code.
+
+But a little while ago, I started to think it’s not as good as I thought when we were first getting started.
+
+So I got to work.
+
+Here’s what I found.
+
 ## Readability
 
 To steal a trick from [the folks at REA][The abject failure of weak typing], what's more readable?
