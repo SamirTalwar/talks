@@ -514,73 +514,7 @@ We can even inline all of the methods without issue, and use method references t
         }
     }
 
-### Robust Failure Handling
-
-There's still one problem with this code. The world of `Optional` doesn't mesh well with the world of exceptions, and so when I change the signature of `Template::format` to signal that it can throw the checked exception `TemplateFormattingException`, I can no longer use it as is in my transformation of my `Optional<Property>`. One way to mitigate this is to use a type that can represent success or failure, where the actual value of the latter can be one of a number of failure scenarios:
-
-  * there was no property found with the given ID
-  * the database query failed
-  * formatting the property using the template failed
-
-We've got bullet points. That means this could probably fit nicely into an enumeration:
-
-    enum RequestFailure {
-        ResourceNotFound,
-        DatabaseQueryFailure,
-        TemplateFormattingFailure
-    }
-
-We lose information like this, though; by just selecting a value from this enum, we've lost *why* the relevant operation failed. So let's make them full-blown classes instead:
-
-    public abstract class RequestException extends Exception { ... }
-
-    public final class ResourceNotFoundException extends RequestException {
-        public ResourceNotFoundException(ResourceId id) { ... }
-    }
-
-    public final class DatabaseQueryException extends RequestException { ... }
-
-    public final class TemplateFormattingException extends RequestException { ... }
-
-They don't *have* to be exceptions, but it's a nice way to bridge the two worlds. Now we can create a new type that truly handles all edge cases. I'm going to call it [`Either`][Data.Either]. This implementation is fictional, but there are plenty of real implementations with the same name out there.
-
-    @Path("/properties")
-    public final class PropertiesResource {
-        @GET
-        @Path("/{propertyId}")
-        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
-            Either<RequestException, Property> property = id.query(connection).fetchOne();
-            Either<RequestException, Output> output = property.then(PropertyTemplate::format);
-
-            output
-                .map(Response::ok)
-                .on(ResourceNotFoundException.class, e -> Response.notFound().entity(id))
-                .failWith(e -> Response.serverError().entity(e))
-                .build();
-        }
-    }
-
-[Data.Either]: https://hackage.haskell.org/package/base/docs/Data-Either.html
-
-In the previous snippet, I named some variables so you could see the type signatures. Java type signatures are pretty verbose; fortunately, we can inline the variables and make our lives a lot better.
-
-    @Path("/properties")
-    public final class PropertiesResource {
-        @GET
-        @Path("/{propertyId}")
-        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
-            id.query(connection).fetchOne()
-                .then(PropertyTemplate::format)
-                .map(Response::ok)
-                .on(ResourceNotFoundException.class, e -> Response.notFound().entity(id))
-                .failWith(e -> Response.serverError().entity(e))
-                .build();
-        }
-    }
-
-The API of this `Either` type takes some getting used to. All you really need to remember is that the result is *either* a success or a failure, with the success type on the right-hand side of the type signature. Once you've got your head around all the lambdas, you can follow the types to see that we really do handle all possible edge cases.
-
-Generics are an incredibly powerful tool that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing exceptions whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
+Generics and checked exceptiosn are incredibly powerful tools that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing uncontrollably whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
 
 
 ## Performance
