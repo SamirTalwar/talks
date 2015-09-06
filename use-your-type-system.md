@@ -435,7 +435,7 @@ Let's try again.
         }
     }
 
-By rearranging the order of the calls such that the database query happens only one level down from the top, we've limited the number of methods that throw a database exception to two. We can tell, using our previous metric, that this code is better, at least in this respect; by listening to our types and letting our method signatures telling us that something was wrong, we were able to produce code which was better decoupled from the database. This means that we coule extract out the formatting and response construction into a different class without any problems, as they're not touching the database call at all, increasing the flexibility but also the robustness of the code.
+By rearranging the order of the calls such that the database query happens only one level down from the top, we've limited the number of methods that throw a database exception to two. We can tell, using our previous metric, that this code is better, at least in this respect; by listening to our types and letting our method signatures telling us that something was wrong, we were able to produce code which was better decoupled from the database. This means that we could extract out the formatting and response construction into a different class without any problems, as they're not touching the database call at all, increasing the flexibility but also the robustness of the code.
 
 Code that doesn't touch the database can't fail due to a database error, after all.
 
