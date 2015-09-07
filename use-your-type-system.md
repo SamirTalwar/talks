@@ -224,21 +224,23 @@ It becomes more readable.
 
 Remember our `searchForProperties` method?  It constructs a search query. Let's expand its implementation.
 
-    public SearchQuery<PropertyId> searchForProperties(PurchasingType purchasingType, Budget budget, Area area) {
+    public SearchQuery<PropertyId> searchForProperties(
+            PurchasingType purchasingType, Budget budget, Area area) {
         Area rectangle = area.asRectangle();
         return connection
-            .query(query -> query
-                .select()
-                .from(PROPERTY)
-                .where(PROPERTY.PURCHASING_TYPE.equal(purchasingType.name()))
-                .and(PROPERTY.BUDGET.lessOrEqual(budget.inPounds()))
-                .and(PROPERTY.LONGITUDE.between(rectangle.minX()).and(rectangle.maxX()))
-                .and(PROPERTY.LATITUDE.between(rectangle.minY()).and(rectangle.maxY())))
-            .filter(row -> area.contains(row.getValue(PROPERTY.LATITUDE), row.getValue(PROPERTY.LONGITUDE)))
-            .map(row -> new PropertyId(row.getValue(PROPERTY.ID)));
+            .query("SELECT * FROM property"
+                 + " WHERE purchasing_type = ?"
+                 + " AND budget <= ?"
+                 + " AND longitude BETWEEN ? AND ?"
+                 + " AND latitude BETWEEN ? AND ?",
+                purchasingType.name(), budget.inGBP(),
+                rectangle.minX(), rectangle.maxX(),
+                rectangle.minY(), rectangle.maxY())
+            .filter(row -> area.contains(row.getDouble("latitude"), row.getDouble("longitude")))
+            .map(row -> new PropertyId(row.getInt("id")));
     }
 
-That particular function searches for `PropertyId` objects by building a query up using the [jOOQ][] API (which it keeps encapsulated in a lambda), then applies a couple of post-processing steps that resemble the Java 8 Streams interface.
+That particular function searches for `PropertyId` objects using SQL against the database, then applies a couple of post-processing steps that resemble the Java 8 Streams interface.
 
 [jOOQ]: http://www.jooq.org/
 
@@ -264,7 +266,22 @@ Alright, *somebody* has to know, but because we've kept the actual ID internal t
 
 There's clearly a win here, when dealing with strict value types, but it's also beneficial to encapsulate objects that work primarily with side effects. For example, our `SearchQuery` type. We could use jOOQ or another query builder API directly, but encapsulating it means that switching to Cassandra and using *its* query builder only requires changing the parts of the codebase concerned with the database: namely, the queries themselves.
 
-In our previous example, the query will work equally well in MySQL and Cassandra, so nothing needs to be done except in the last step when constructing the `PropertyId` object. For the rest, w can just trust that the implementation of `CassandraSearchQuery` will take care of it.
+    public SearchQuery<PropertyId> searchForProperties(
+            PurchasingType purchasingType, Budget budget, Area area) {
+        Area rectangle = area.asRectangle();
+        return connection
+            .query(select().from("property")
+                    .where(eq("purchasing_type", purchasingType.name()))
+                    .and(lte("budget", budget.inGBP()))
+                    .and(gte("longitude", rectangle.minX()))
+                    .and(lte("longitude", rectangle.maxX()))
+                    .and(gte("latitude", rectangle.minY()))
+                    .and(lte("latitude", rectangle.maxY())))
+            .filter(row -> area.contains(row.getDouble("latitude"), row.getDouble("longitude")))
+            .map(row -> new PropertyId(row.getUUID("id"), row.getInt("human_representation")));
+    }
+
+Once this function is changed, we're done. Because we encapsulated the integer ID in the `PropertyId` class, nothing else needs to change; they still work with the `PropertyId` just as before. The `PropertyId` acts as a translation layer between the database query and the domain logic, decoupling the two and keeping each one *flexible* with regards to the other.
 
 
 ## Correctness
@@ -554,11 +571,11 @@ No, the problem I want to tackle here is a little more subtle, and only occurs o
 Let's imagine that we're looking for properties, and we've created a short list:
 
     Set<ShortListedProperty> shortList = connection
-        .query(query -> query
-            .select()
-            .from(SHORT_LIST)
-            .join(PROPERTY).on(SHORT_LIST.PROPERTY_ID.eq(PROPERTY.ID))
-            .where(SHORT_LIST.USER_ID.eq(user.id())))
+        .query("SELECT * FROM short_list"
+             + " JOIN property"
+             + " ON short_list.property_id = property.id"
+             + " WHERE short_list.user_id = ?",
+            user.id())
         .map(row -> propertyFrom(row))
         .fetch()
         .collect(toSet());
@@ -588,15 +605,16 @@ Oh, one more thing. If properties are up for auction in the next seven days, we'
 But we don't just want to show the shortlisted auctions! Sure, those should be there, but if there's an auction and the seller is paying us for extra advertising, we need to throw it in.
 
     Stream<Property> randomPromotedAuction = connection
-        .query(query -> query
-            .select()
-            .from(PROPERTY)
-            .where(PROPERTY.SALE_TYPE.eq(PropertySaleType.AUCTION))
-            .and(PROPERTY.PROMOTED.eq(true))
-            .limit(1))
+        .query("SELECT * FROM property"
+             + " WHERE sale_type = ?"
+             + " AND promoted = TRUE"
+             + " LIMIT 1",
+            PropertySaleType.AUCTION.name())
         .fetch();
 
-    List<Property> highlighted = Stream.concat(randomPromotedAuction, upForAuctionSoon.stream())
+    List<Property> highlighted = Stream.concat(
+            randomPromotedAuction,
+            upForAuctionSoon.stream())
         .collect(toList());
 
 And we've got more features coming every week!
