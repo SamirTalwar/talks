@@ -2,6 +2,8 @@
 layout: default
 title: Use Your Type System; Write Less Code
 date: 2015-04-17 15:40:00 +0100
+presentation:
+  link: http://www.slideshare.net/SamirTalwar/use-your-type-system-write-less-code
 
 code:
   language: java
