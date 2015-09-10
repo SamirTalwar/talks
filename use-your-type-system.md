@@ -646,12 +646,11 @@ So, we need to stop constructing new collections for each stage of the pipeline.
     public final class ShortList {
         public static ShortList from(DatabaseConnection conection) {
             Map<City, List<ShortListedProperty>> shortListByCity = connection
-                .query(query -> query
-                    .select()
-                    .from(SHORT_LIST)
-                    .join(PROPERTY).on(SHORT_LIST.PROPERTY_ID.eq(PROPERTY.ID))
-                    .where(SHORT_LIST.USER_ID.eq(user.id()))
-                    .orderBy(SHORT_LIST.DATE_TIME_ADDED))
+                .query("SELECT * FROM short_list"
+                     + " JOIN property ON short_list.property_id = property.id"
+                     + " WHERE short_list.user_id = ?"
+                     + " ORDER BY short_list.date_time_added",
+                     user.id())
                 .map(row -> propertyFrom(row))
                 .fetch()
                 .collect(grouping(ShortListedProperty::city));
