@@ -655,10 +655,9 @@ So, we need to stop constructing new collections for each stage of the pipeline.
                 .fetch()
                 .collect(grouping(ShortListedProperty::city));
 
-            List<ShortListedProperty> upForAuctionSoon = shortListsByCity.values().stream()
+            Stream<ShortListedProperty> upForAuctionSoon = shortListsByCity.values().stream()
                 .flatMap(Collection::stream) // to flatten the lists
-                .filter(property -> property.isUpForAuctionInLessThan(1, WEEK))
-                .collect(toList());
+                .filter(property -> property.isUpForAuctionInLessThan(1, WEEK));
 
             Stream<Property> randomPromotedAuction = connection ...
 
