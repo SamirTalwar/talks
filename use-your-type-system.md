@@ -559,7 +559,7 @@ We can even inline all of the methods without issue, and use method references t
         }
     }
 
-Generics and checked exceptiosn are incredibly powerful tools that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing uncontrollably whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
+Generics and checked exceptions are incredibly powerful tools that we can use to tell the compiler about the current state of the system. By using them to encode all possible states, including failure, we can ensure that our code *must* handle anything that might go wrong. Instead of hiding the problem through unchecked exceptions and throwing uncontrollably whenever a `null` is encountered, we're asking the compiler to make it impossible *not* to tackle it head-on.
 
 
 ## Efficiency
@@ -637,11 +637,11 @@ I expect you see the problem. We have lots of different ways that we represent t
         ...
     }
 
-We've wrapped all of the different pieces of information that make up our short list page in one place. This is much nicer from a design perspective, as it unites what was previously a fairly haphazard set of data, but it also gives us a great opportunity to recognise the obvious efficiency problem. Previously, the functions that construct the lists, sets and maps would have been scattered; now, they'll all live in the same class, and we can easily recognise when whe're doing work unnecessarily, even when we haven't worked on this area of the codebase in weeks.
+We've wrapped all of the different pieces of information that make up our short list page in one place. This is much nicer from a design perspective, as it unites what was previously a fairly haphazard set of data, but it also gives us a great opportunity to recognise the obvious efficiency problem. Previously, the functions that construct the lists, sets and maps would have been scattered; now, they'll all live in the same class, and we can easily recognise when we're doing work unnecessarily, even when we haven't worked on this area of the codebase in weeks.
 
 We're working in Java 8 now, so each time we process a collection, the first thing we do is turn it into a `Stream<T>` using the `.stream()` method. Beforehand, we'd write a for-each loop that iterates over the collection, which constructs an `Iterator<T>` internally and ends up doing basically the same thing. This means that whether you're using loops, functional methods on your collection, [LINQ][] or anything else, you're still doing more work than you need to be.
 
-So, we need to stop constructing new collections for each stage of the pipeline. The only three outputs here are *shorListsByCity*, *cities* and *highlighted*; everything else is an intermediary which is no longer used outside this one class. This means that we can inline them, keeping them as streams and not bothering to `collect(toList())`. Streams, just like many collections in Scala or the output of LINQ expressions in C#, are lazy, in that they are only processed once and only when you actually evaluate them. The new code will look something like this:
+So, we need to stop constructing new collections for each stage of the pipeline. The only three outputs here are *shortListsByCity*, *cities* and *highlighted*; everything else is an intermediary which is no longer used outside this one class. This means that we can inline them, keeping them as streams and not bothering to `collect(toList())`. Streams, just like many collections in Scala or the output of LINQ expressions in C#, are lazy, in that they are only processed once and only when you actually evaluate them. The new code will look something like this:
 
     public final class ShortList {
         public static ShortList from(DatabaseConnection conection) {
