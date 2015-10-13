@@ -222,6 +222,15 @@ By encapsulating the integer in a `PropertyId`, we're conveying more information
 It becomes more readable.
 
 
+## Searchability
+
+It's not just humans that can read things better when they're well-typed; computers can too. Specifically, your static analysis tools, which (in the Java and C# worlds at least) catalogue everything about your software. This means that I can ask my tooling (often an IDE such as IntelliJ IDEA, Eclipse or Visual Studio) for every instance of a `PropertyId`, or every invocation of its `query` method. By contrast, searching for `int` will always be completely useless—I almost never want to find all integers in my system.
+
+It also means I can perform automated refactoring techniques. So if I decide that `renderTo` should be called `writeTo` instead, I can ask my tools to rename it, and they can do so safely, without me having to worry about whether there is another method with the same name. Even in a dynamic language such as Python, static analysis tools have come far enough that we can perform operations like this with minimum levels of confirmation, and trust our unit tests with the rest.
+
+There's a bigger advantage to this. We spend more time reading code than writing code. By making my code more searchable in a semi-automated fashion, I can spend less time worrying about what might need to change if I change my `PropertyId` type. I can use my time more effectively, reading the relevant code instead of trawling through irrelevant code, hoping to find the few operations that query the database by property ID instead of all the other pieces of behaviour that deal with `int`s.
+
+
 ## Flexibility
 
 Remember our `searchForProperties` method?  It constructs a search query. Let's expand its implementation.
@@ -680,11 +689,11 @@ Instead of processing the properties five times, we did it twice, purely because
 
 ## In Conclusion
 
-We tackled four discrete problems, but the solution has always been the same in every one of these cases. In each case, the need for a simpler design led us to create a new type. Sometimes we made types that wrapped data, in the case of `CircularArea`, `PropertyId` and `ShortList`, among others. This was to protect the data from easy access and manipulation, reducing the scope. Other times, we extracted behaviour, creating `Optional` and `Either` types to make explicit behaviour that was previously hidden by the vagaries of Java and languages like it.
+We tackled five discrete problems, but the solution has always been the same in every one of these cases. In each case, the need for a simpler design led us to create a new type. Sometimes we made types that wrapped data, in the case of `CircularArea`, `PropertyId` and `ShortList`, among others. This was to protect the data from easy access and manipulation, reducing the scope. Other times, we extracted behaviour, creating `Optional` and `Either` types to make explicit behaviour that was previously hidden by the vagaries of Java and languages like it.
 
 In every case, our types became behaviour attractors, pulling in logic that was previously scattered (and often duplicated) everywhere. In this, we achieved [the holy grail][Putting an Age-Old Battle to Rest], removing duplication *and* increasing clarity. To keep them that way, we made sure not to expose the data in a general fashion, but only in order to fulfill the specific goals of that object.
 
-Our code became more __readable__, __flexible__, __correct__ and, surprisingly, more __efficient__ too. While I can't promise that will happen every time, I can tell you it's worked for me far more often than not.
+Our code became more __readable__, __searchable__, __flexible__, __correct__ and, surprisingly, more __efficient__ too. While I can't promise that will happen every time, I can tell you it's worked for me far more often than not.
 
 So what are you waiting for? Go wrap some data in some brand new types.
 
