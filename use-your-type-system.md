@@ -389,9 +389,9 @@ Surely not, right? I mean, no one likes code that looks like this:
 
         @GET
         @Path("/{propertyId}")
-        public Response propertyDetails(@PathParam("propertyId") int id) {
+        public Response propertyDetails(@PathParam("propertyId") PropertyId id) {
             try {
-                return propertyResponse(new PropertyId(id));
+                return propertyResponse(id);
             } catch (DatabaseQueryException e) {
                 return Response.serverError().entity(e).build();
             }
