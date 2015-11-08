@@ -1,5 +1,6 @@
 (function() {
     var revealed = false,
+        theme = 'white',
         modeActions = {
             essay: function() { unreveal(); },
             presentation: function() { reveal(); },
@@ -24,8 +25,8 @@
     }
 
     function reveal() {
-        $('head').append('<link rel="stylesheet" href="vendor/reveal.js/css/reveal.min.css">');
-        $('head').append('<link rel="stylesheet" href="vendor/reveal.js/css/theme/default.css" id="theme">');
+        $('head').append('<link rel="stylesheet" href="vendor/reveal.js/css/reveal.css">');
+        $('head').append('<link rel="stylesheet" href="vendor/reveal.js/css/theme/' + theme + '.css" id="theme">');
 
         $('.title-slide').append($('header')[0]);
 
@@ -35,14 +36,12 @@
             history: true,
             center: true,
 
-            theme: Reveal.getQueryHash().theme || 'simple',
+            theme: Reveal.getQueryHash().theme || theme,
             transition: Reveal.getQueryHash().transition || 'linear',
 
             minScale: 1,
             maxScale: 1
         });
-
-        $('.slides section').css('margin-top', '400px');
 
         revealed = true;
     }

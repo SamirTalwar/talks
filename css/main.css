@@ -283,6 +283,10 @@ body.video .document .slides > :not(:first-child)
     text-align: center;
 }
 
+.presentation .reveal {
+    position: static;
+}
+
 .presentation .reveal .slides .image img {
     width: 100%;
     border: none;
@@ -291,6 +295,11 @@ body.video .document .slides > :not(:first-child)
 
 .presentation .reveal .slides cite {
     font-size: 0.5em;
+}
+
+.presentation .reveal .slides code {
+    background: none;
+    color: black;
 }
 
 .video-player {
