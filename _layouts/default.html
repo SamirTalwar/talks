@@ -37,7 +37,7 @@
                 {% endif %}
             </aside>
 
-            <div class="reveal document {% if page.code %}language-{{page.code.language}}{% endif %}">
+            <main class="reveal document {% if page.code %}language-{{page.code.language}}{% endif %}">
                 <div class="slides">
                     <section>
                         <header>
@@ -48,7 +48,7 @@
 
                     {{ content }}
                 </div>
-            </div>
+            </main>
 
             {% if page.video and page.video.youtube_id %}
                 <div class="video-player">
