@@ -1,0 +1,29 @@
+SoftwareSystem = Monolith | | |
+Container = Monolith | The Game | Ships on a Blu-Ray. | Xbox Two | | 1050,9
+Container = Monolith | Server | Where the magic happens. | Doesn't everybody write their games in node.js? | |
+Component = Server | Bridge | Listens for events and pushes events back out. | | | 1050,445
+Component = Server | Players | Manages who's online and available. | | | 1997,901
+Component = Server | Matchmaker | Grabs players, starts and ends matches. | | | 1353,900
+Component = Server | Gameplay | Runs the game. | | | 711,900
+Component = Server | Scoring | Determines the score and who won. | | | 69,900
+Container = Monolith | Database | Stores interesting data. | PostgreSQL | Database | 1030,1319
+
+Relationship = The Game | Uses | | Bridge | |
+Relationship = Bridge | Uses | | Players | |
+Relationship = Bridge | Uses | | Matchmaker | |
+Relationship = Bridge | Uses | | Gameplay | |
+Relationship = Bridge | Uses | | Scoring | |
+Relationship = Gameplay | Uses | | Matchmaker | |
+Relationship = Gameplay | Uses | | Scoring | |
+Relationship = Matchmaker | Uses | | Players | |
+Relationship = Matchmaker | Uses | | Database | |
+Relationship = Players | Uses | | Database | |
+Relationship = Scoring | Uses | | Database | |
+
+Diagram = Component | Server | | A5_Landscape
+
+ElementStyle = Element   |  400 |  300 |         | #ffffff |  36 |
+ElementStyle = Container |      |      | #438dd5 |         |     |
+ElementStyle = Component |      |      | #85bbf0 | #000000 |     |
+
+RelationshipStyle = Relationship |  5 |         |       | Direct     |  32 |  400 |

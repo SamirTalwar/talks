@@ -81,12 +81,21 @@ table.vertical th:first-child, table.vertical td:first-child {
     border-left: none;
 }
 
+figcaption {
+    text-align: center;
+    font-style: italic;
+}
+
 footer {
     margin-top: 10px;
     border-top: 1px solid #ccc;
     padding-top: 10px;
     font-size: smaller;
     text-align: center;
+}
+
+[title] {
+  text-decoration: dotted underline;
 }
 
 /*****************************************************************************/

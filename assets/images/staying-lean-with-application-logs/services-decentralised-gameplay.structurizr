@@ -1,0 +1,26 @@
+SoftwareSystem = Services - Decentralised | | |
+Container = Services - Decentralised | Matchmaker | Grabs players, starts and ends matches. | | | 1431,1251
+Container = Services - Decentralised | Gameplay | Runs the game. | | |
+Container = Services - Decentralised | Scoring | Determines the score and who won. | | | 647,1251
+Component = Gameplay | HTTP Router | | | | 1035,76
+Component = Gameplay | Request Logger | | | | 1590,76
+Component = Gameplay | Game Runner | | | | 1035,456
+Component = Gameplay | Matchmaker Client | | | | 1825,871
+Component = Gameplay | Scoring Client | | | | 255,871
+Component = Gameplay | Database | | | | 1039,871
+
+Relationship = HTTP Router | | | Game Runner | |
+Relationship = HTTP Router | | | Request Logger | |
+Relationship = Game Runner | | | Matchmaker Client | |
+Relationship = Game Runner | | | Scoring Client | |
+Relationship = Game Runner | | | Database | |
+Relationship = Matchmaker Client | | | Matchmaker | |
+Relationship = Scoring Client | | | Scoring | |
+
+Diagram = Component | Gameplay | | A5_Landscape
+
+ElementStyle = Element   |  400 |  300 |         | #ffffff |  36 |
+ElementStyle = Container |      |      | #438dd5 |         |     |
+ElementStyle = Component |      |      | #85bbf0 | #000000 |     |
+
+RelationshipStyle = Relationship |  5 |         |       | Direct     |  32 |  400 |

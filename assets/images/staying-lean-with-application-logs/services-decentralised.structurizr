@@ -1,0 +1,16 @@
+SoftwareSystem = Services - Decentralised | | |
+Container = Services - Decentralised | Players | Manages who's online and available. | | | 1632,1161
+Container = Services - Decentralised | Matchmaker | Grabs players, starts and ends matches. | | | 1632,166
+Container = Services - Decentralised | Gameplay | Runs the game. | | | 447,166
+Container = Services - Decentralised | Scoring | Determines the score and who won. | | | 447,1161
+
+Relationship = Gameplay | Uses | | Matchmaker | |
+Relationship = Gameplay | Uses | | Scoring | |
+Relationship = Matchmaker | Uses | | Players | |
+
+Diagram = Container | Services - Decentralised | | A5_Landscape
+
+ElementStyle = Element   |  400 |  300 |         | #ffffff |  36 |
+ElementStyle = Container |      |      | #438dd5 |         |     |
+
+RelationshipStyle = Relationship |  5 |         |       | Direct     |  32 |  400 |
