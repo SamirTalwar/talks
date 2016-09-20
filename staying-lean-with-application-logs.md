@@ -7,16 +7,22 @@ code:
   language: javascript
 ---
 
+*With [@sleepyfox][].*
+
+[@sleepyfox]: https://twitter.com/sleepyfox
+
+---
+
 We're building a game for Xbox Two: <strong title="Which is definitely not related to &quot;Destiny&quot;.">Fate</strong>. One of the game modes is called the… um… <strong>Trials of Anubis</strong>.
 
 <figure>
-  <img alt="Fate cover art" src="staying-lean-with-application-logs/cover-art.png"/>
+  <img alt="Fate cover art" src="assets/images/staying-lean-with-application-logs/cover-art.png"/>
   <figcaption>Copyright me, 2016</figcaption>
 </figure>
 
 Here's how it works.
 
-  * You have two teams, each of three players.
+  * You have two teams, *Alpha* and *Bravo*, each of three players.
   * Each team is trying to defeat the other one.
   * If you take another player down, they don't revive in the same round.
   * Players *can* bring their teammates back up, but it's time-consuming.
@@ -27,7 +33,7 @@ Here's how it works.
 
 It used to look like this:
 
-![Monolith](staying-lean-with-application-logs/monolith.png)
+![Monolith](assets/images/staying-lean-with-application-logs/monolith.png)
 
 I know, pretty, right.
 
@@ -39,19 +45,19 @@ Next up: scale out the monolith. Sure, it works fairly well, but the problem is 
 
 So we rewrote it to use services. That went as well as you might expect.
 
-![Services with a centralised database](staying-lean-with-application-logs/services-centralised-database.png)
+![Services with a centralised database](assets/images/staying-lean-with-application-logs/services-centralised-database.png)
 
 Communication via the database. What an excellent plan. That worked for about twenty seconds before we ran into consistency problems.
 
 So we moved to services communicating directly with each other. We looked at the literature and it appears that the conventional way is to make them talk over HTTP. So we did.
 
-![Decentralised services](staying-lean-with-application-logs/services-decentralised.png)
+![Decentralised services](assets/images/staying-lean-with-application-logs/services-decentralised.png)
 
 Or rather, we tried to. But with all the additional infrastructure required to handle and debug service HTTP connections, it got real complicated real fast.
 
 Let's blow up the Gameplay service.
 
-![Decentralised services](staying-lean-with-application-logs/services-decentralised-gameplay.png)
+![Decentralised services](assets/images/staying-lean-with-application-logs/services-decentralised-gameplay.png)
 
 Now, observe the components of this service. First of all, note that four out of six are just about handling the HTTP server and various clients. Of course, the game loop is huge, and could be broken down further, but that's our bread and butter. None of the HTTP stuff makes us money; it's just [*waste*][Muda].
 
@@ -88,4 +94,145 @@ A log-powered event bus. Sounds crazy. Let's do it.
 
 ## Let's see it work.
 
+Go and clone [SamirTalwar/logs-as-the-event-source][]. I'll wait.
+
+Done? Great. You'll also need [Docker][Install Docker] and [Docker Compose][Install Docker Compose].
+
+Let's start up Fluentd. We're going to pipe STDOUT to there. It's also running a WebSocket server, which will act as a very basic event publisher. In the real world, you'll want something that can scale a little better.
+
+```sh
+docker-compose -f docker-compose.fluentd.yml build
+docker-compose -f docker-compose.fluentd.yml up
+```
+
+Give it 10 seconds or so to warm up, then we'll be ready to start the application. It's going to simulate a Trials of Anubis match. The *players*, *matchmaker* and *gameplay* events are canned, but the *scoring* events are reacting to the others. Watch, and you'll see it figure out pretty quickly when a round is over.
+
+Fire it up.
+
+```sh
+docker-compose build
+docker-compose up
+```
+
+The output will look something like this:
+
+```text
+Starting logging_scoring_1
+Starting logging_gameplay_1
+Starting logging_players_1
+Starting logging_matchmaker_1
+Attaching to logging_scoring_1, logging_matchmaker_1, logging_gameplay_1, logging_players_1
+players_1     | {"type":"PlayerJoin","player":{"id":1,"name":"A"}}
+players_1     | {"type":"PlayerJoin","player":{"id":2,"name":"B"}}
+players_1     | {"type":"PlayerJoin","player":{"id":3,"name":"C"}}
+players_1     | {"type":"PlayerJoin","player":{"id":4,"name":"D"}}
+players_1     | {"type":"PlayerJoin","player":{"id":5,"name":"E"}}
+players_1     | {"type":"PlayerJoin","player":{"id":6,"name":"F"}}
+matchmaker_1  | {"type":"MatchStart","match":{"id":99,"teams":{"alpha":{"players":[1,4,5]},"bravo":{"players":[2,3,6]}}}}
+matchmaker_1  | {"type":"MatchRoundStart","match":{"id":99},"round":1}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":3,"perpetrator":5}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":5,"perpetrator":2}
+gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":3,"perpetrator":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":1,"perpetrator":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":6,"perpetrator":4}
+gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":6,"perpetrator":3}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":4,"perpetrator":2}
+scoring_1     | {"type":"ScoringRoundWinner","match":{"id":99},"winner":"bravo"}
+matchmaker_1  | {"type":"MatchRoundEnd","match":{"id":99},"round":1}
+matchmaker_1  | {"type":"MatchRoundStart","match":{"id":99},"round":2}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":3,"perpetrator":5}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":5,"perpetrator":2}
+gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":3,"perpetrator":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":1,"perpetrator":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":6,"perpetrator":4}
+gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":6,"perpetrator":3}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":4,"perpetrator":2}
+scoring_1     | {"type":"ScoringRoundWinner","match":{"id":99},"winner":"bravo"}
+scoring_1     | {"type":"ScoringMatchWinner","match":{"id":99},"winner":"bravo"}
+matchmaker_1  | {"type":"MatchRoundEnd","match":{"id":99},"round":2}
+matchmaker_1  | {"type":"MatchEnd","match":{"id":99}}
+```
+
+Docker Compose is aggregating the logs that get pumped out, but they're also going to Fluentd. The *scoring* service is listening to those events, storing state, and occasionally sending out its own by logging in exactly the same fashion.
+
+Something like this:
+
+```
+const ws = new WebSocket(process.env.WEBSOCKET)
+ws.on('error', report)
+
+ws.on('message', attempt(data => {
+  const event = JSON.parse(data)[1].event
+  const handle = handlers[event.type] || noHandler
+  handle(event)
+}))
+
+const handlers = {
+  ...
+  'GamePlayerDown': event => {
+    const match = matches.get(event.match.id)
+    match.playersUp.delete(event.player)
+    checkRoundWinner(match)
+  },
+  ...
+}
+
+const checkRoundWinner = match => {
+  Teams.forEach(team => {
+    if (!match.teams[team].players.some(player => match.playersUp.has(player))) {
+      console.log(JSON.stringify({
+        type: 'ScoringRoundWinner',
+        match: {
+          id: match.id
+        },
+        round: match.round,
+        winner: other(team)
+      }))
+    }
+  })
+}
+```
+
+That's a bit of a mouthful, but you'll be able to figure it out. Basically, it's listening for events over a WebSocket, and when it gets one with, for example, a type of `'GamePlayerDown'`, it removes that player from its set of `playersUp`. It then checks each team to see if that team has any players up at all. If not, the other team must have won, so it publishes an event.
+
+Of course, it can listen to its own events, and it does.
+
+```
+const handlers = {
+  ...
+  'ScoringRoundWinner': event => {
+    const match = matches.get(event.match.id)
+    match.teams[event.winner].score += 1
+    checkMatchWinner(match)
+  },
+  ...
+}
+```
+
+When it sends a `'ScoringRoundWinner'` event, that triggers the event handler again, and we trap that event too, this time to figure out if we've won enough rounds to win the match.
+
+[SamirTalwar/logs-as-the-event-source]: https://github.com/SamirTalwar/logs-as-the-event-source
+[Install Docker]: https://www.docker.com/products/docker
+[Install Docker Compose]: https://docs.docker.com/compose/install/
+
 ## In closing
+
+By using our logs as an event stream, we've checked a lot of boxes.
+
+  * We have a log of all events in the system.
+  * There's real-time reactive behaviour across services.
+  * The stateless services are completely scalable, and there's patterns for scaling the stateful ones.
+  * Adding new services that derive information from the data requires no modifications to the existing ones.
+  * We have a model for handling catastrophic failure, by spinning up replacement systems and simply replaying the events.
+
+And you know my favourite?
+
+We've come this far without any database at all.
+
+Obviously, Fluentd as a server won't scale, but once you've collected the events in one place, you can pipe them wherever you want. Push them through an event stream that will scale with the rest of your architecture, like [Kafka][]. Store them in [Elasticsearch][] or dump them on [Amazon S3][]. And when you really do need that database, you can populate it from a single source of truth in exactly the same way.
+
+But until then, stay lean.
+
+[Kafka]: https://kafka.apache.org/
+[Elasticsearch]: https://www.elastic.co/products/elasticsearch
+[Amazon S3]: https://aws.amazon.com/s3/
