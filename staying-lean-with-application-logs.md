@@ -128,40 +128,48 @@ Starting logging_gameplay_1
 Starting logging_players_1
 Starting logging_matchmaker_1
 Attaching to logging_scoring_1, logging_matchmaker_1, logging_gameplay_1, logging_players_1
-gameplay_1    | {"type":"Startup","service":"gameplay","hostname":"dcd089994031"}
-scoring_1     | {"type":"Startup","service":"scoring","hostname":"5d272b20de4c"}
-players_1     | {"type":"Startup","service":"players","hostname":"2db407ba2a7f"}
-matchmaker_1  | {"type":"Startup","service":"matchmaker","hostname":"9fca91434d2b"}
-players_1     | {"type":"PlayerJoin","player":{"id":1,"name":"A"}}
-players_1     | {"type":"PlayerJoin","player":{"id":2,"name":"B"}}
-players_1     | {"type":"PlayerJoin","player":{"id":3,"name":"C"}}
-players_1     | {"type":"PlayerJoin","player":{"id":4,"name":"D"}}
-players_1     | {"type":"PlayerJoin","player":{"id":5,"name":"E"}}
-players_1     | {"type":"PlayerJoin","player":{"id":6,"name":"F"}}
-matchmaker_1  | {"type":"MatchStart","match":{"id":99,"teams":{"alpha":{"players":[1,4,5]},"bravo":{"players":[2,3,6]}}}}
-matchmaker_1  | {"type":"MatchRoundStart","match":{"id":99},"round":1}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":3,"perpetrator":5}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":5,"perpetrator":2}
-gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":3,"perpetrator":6}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":1,"perpetrator":6}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":6,"perpetrator":4}
-gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":6,"perpetrator":3}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":4,"perpetrator":2}
-scoring_1     | {"type":"ScoringRoundWinner","match":{"id":99},"winner":"bravo"}
-matchmaker_1  | {"type":"MatchRoundEnd","match":{"id":99},"round":1}
-matchmaker_1  | {"type":"MatchRoundStart","match":{"id":99},"round":2}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":3,"perpetrator":5}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":5,"perpetrator":2}
-gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":3,"perpetrator":6}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":1,"perpetrator":6}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":6,"perpetrator":4}
-gameplay_1    | {"type":"GamePlayerRevived","match":{"id":99},"player":6,"perpetrator":3}
-gameplay_1    | {"type":"GamePlayerDown","match":{"id":99},"player":4,"perpetrator":2}
-scoring_1     | {"type":"ScoringRoundWinner","match":{"id":99},"winner":"bravo"}
-scoring_1     | {"type":"ScoringMatchWinner","match":{"id":99},"winner":"bravo"}
-matchmaker_1  | {"type":"MatchRoundEnd","match":{"id":99},"round":2}
-matchmaker_1  | {"type":"MatchEnd","match":{"id":99}}
+scoring_1     | {"type":"ServiceStarted","service":"scoring","hostname":"5012e39b5b33"}
+matchmaker_1  | {"type":"ServiceStarted","service":"matchmaker","hostname":"ed2947f68981"}
+gameplay_1    | {"type":"ServiceStarted","service":"gameplay","hostname":"6dd9ae1f908a"}
+players_1     | {"type":"Startup","service":"players","hostname":"6928c0e3ed72"}
+players_1     | {"type":"PlayerJoined","player":{"id":1,"name":"A"}}
+players_1     | {"type":"PlayerJoined","player":{"id":2,"name":"B"}}
+players_1     | {"type":"PlayerJoined","player":{"id":3,"name":"C"}}
+players_1     | {"type":"PlayerJoined","player":{"id":4,"name":"D"}}
+players_1     | {"type":"PlayerJoined","player":{"id":5,"name":"E"}}
+players_1     | {"type":"PlayerJoined","player":{"id":6,"name":"F"}}
+matchmaker_1  | {"type":"MatchStarted","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}}}}
+matchmaker_1  | {"type":"MatchRoundStarted","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":1}}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":2}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":5}
+gameplay_1    | {"type":"GamePlayerUp","match":{"id":1},"player":2}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":3}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":1}
+scoring_1     | {"type":"ScoringRoundWon","match":{"id":1},"round":1,"winner":"bravo"}
+matchmaker_1  | {"type":"MatchRoundEnded","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":1}}
+matchmaker_1  | {"type":"MatchRoundStarted","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":2}}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":2}
+gameplay_1    | {"type":"GamePlayerUp","match":{"id":1},"player":2}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":2}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":4}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":5}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":6}
+scoring_1     | {"type":"ScoringRoundWon","match":{"id":1},"round":2,"winner":"alpha"}
+matchmaker_1  | {"type":"MatchRoundEnded","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":2}}
+matchmaker_1  | {"type":"MatchRoundStarted","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":3}}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":1}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":4}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":5}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":6}
+gameplay_1    | {"type":"GamePlayerDown","match":{"id":1},"player":2}
+scoring_1     | {"type":"ScoringRoundWon","match":{"id":1},"round":3,"winner":"alpha"}
+scoring_1     | {"type":"ScoringMatchWon","match":{"id":1},"winner":"alpha"}
+matchmaker_1  | {"type":"MatchRoundEnded","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":3}}
+matchmaker_1  | {"type":"MatchEnd","match":{"id":1,"teams":{"alpha":{"players":[{"id":1,"name":"A"},{"id":3,"name":"C"},{"id":5,"name":"E"}]},"bravo":{"players":[{"id":2,"name":"B"},{"id":4,"name":"D"},{"id":6,"name":"F"}]}},"round":3,"winner":"alpha"}}
 ```
+
+When the match ends, hit *Ctrl+C* to terminate the containers.
 
 Docker Compose is aggregating the logs that get pumped out, but they're also going to Fluentd. The *scoring* service is listening to those events, storing state, and occasionally sending out its own by logging in exactly the same fashion.
 
