@@ -111,7 +111,7 @@ docker-compose -f docker-compose.fluentd.yml build
 docker-compose -f docker-compose.fluentd.yml up
 ```
 
-Give it 10 seconds or so to warm up, then we'll be ready to start the application. It's going to simulate a Trials of Anubis match. The *players*, *matchmaker* and *gameplay* events are canned, but the *scoring* events are reacting to the others. Watch, and you'll see it figure out pretty quickly when a round is over.
+Give it 10 seconds or so to warm up, then we'll be ready to start the application. It's going to simulate a Trials of Anubis match. The Players service is just playing canned events, but all the others are listening and responding appropriately.
 
 Fire it up.
 
