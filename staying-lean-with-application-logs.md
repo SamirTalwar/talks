@@ -122,6 +122,10 @@ Starting logging_gameplay_1
 Starting logging_players_1
 Starting logging_matchmaker_1
 Attaching to logging_scoring_1, logging_matchmaker_1, logging_gameplay_1, logging_players_1
+gameplay_1    | {"type":"Startup","service":"gameplay","hostname":"dcd089994031"}
+scoring_1     | {"type":"Startup","service":"scoring","hostname":"5d272b20de4c"}
+players_1     | {"type":"Startup","service":"players","hostname":"2db407ba2a7f"}
+matchmaker_1  | {"type":"Startup","service":"matchmaker","hostname":"9fca91434d2b"}
 players_1     | {"type":"PlayerJoin","player":{"id":1,"name":"A"}}
 players_1     | {"type":"PlayerJoin","player":{"id":2,"name":"B"}}
 players_1     | {"type":"PlayerJoin","player":{"id":3,"name":"C"}}
@@ -214,6 +218,80 @@ When it sends a `'ScoringRoundWinner'` event, that triggers the event handler ag
 [SamirTalwar/logs-as-the-event-source]: https://github.com/SamirTalwar/logs-as-the-event-source
 [Install Docker]: https://www.docker.com/products/docker
 [Install Docker Compose]: https://docs.docker.com/compose/install/
+
+## What's in a log?
+
+There are a few important things about our logs that make them amenable to this kind of development.
+
+First of all, they're **machine-readable first**, human-readable second. We log in JSON, not any other way. We can easily convert from machine-readable logs to human-readable ones, so this is only an issue if you're reading them directly. Tools such as [Kibana][] will help a lot here.
+
+Secondly, we don't worry about any of the typical features that a logging framework gives you. The way we log doesn't support:
+
+  * filtering by severity level,
+  * log rotation,
+  * multiple formats,
+  * or even logging to a file.
+
+We just push information out on STDOUT and let the logging service, Fluentd, handle the rest. If we want to store the logs, we use a log store as its own dedicated service.
+
+Thirdly, every log item has a type, which dictates the structure of the rest of the item. This structure is a contract, and it won't change without warning all consumers. And yes, that includes your ops team.
+
+Fourthly, and most importantly, we've thought hard about what we log. We log every notable event in the system, including startup, errors and exceptions.
+
+Now, there's probably more that needs to be done here. Our event structure *will* change eventually, and so a version number of sorts would be useful. Often, you'll also need an upgrade mechanism for replaying old events, although in the case of this video game, that's only important for our own analytics, not gameplay. In addition, scaling will need some thought, like how to make sure that the same event isn't handled twice by two different instances of the same service. But for getting ourselves off the ground,
+
+All that said, getting started is *cheap*. After all, logging JSON is just a few lines of code in any language.
+
+[Kibana]: https://www.elastic.co/products/kibana
+
+### Don't repeat yourself
+
+Our events here are pretty simple. However, in your typical web application, context is important, and it's annoying to have to duplicate your logging code everywhere. So at [Your Golf Travel][], @sleepyfox and I wrote a logging library [which is now on GitHub][ygt/microservice-logging]. It enforces a bit of convention—every log item has an event type, severity and timestamp.
+
+You use it something like this:
+
+```
+const Logger = require('./logger')
+
+const log = new Logger({
+  now: Date.now,
+  output: console,
+  events: {
+    startup: 'startup',
+    httpRequest: 'HTTP request',
+    database: 'database'
+  }
+}).with({service: 'my super service'})
+
+log.startup.info({
+  message: 'Ready to go.',
+  port: 8080
+})
+
+// later on
+
+const requestLog = log.with({request_id: '126bb6fa-28a2-470f-b013-eefbf9182b2d'})
+requestLog.database.error({
+  message: 'Connection failed.'
+})
+requestLog.httpRequest.info({
+  request: {method: 'GET'},
+  response: {status: 500}
+})
+```
+
+And the output looks like this:
+
+```json
+{"timestamp":1474443152917,"event_type":"startup","severity":"INFO","service":"my super service","message":"Ready to go.","port":8080}
+{"timestamp":1474443152920,"event_type":"database","severity":"ERROR","service":"my super service","request_id":"126bb6fa-28a2-470f-b013-eefbf9182b2d","message":"Connection failed."}
+{"timestamp":1474443152921,"event_type":"HTTP request","severity":"INFO","service":"my super service","request_id":"126bb6fa-28a2-470f-b013-eefbf9182b2d","request":{"method":"GET"},"response":{"status":500}}
+```
+
+As you can see, it's really easy to add extra information to the log once and have it repeat itself later, helping you correlate log items. At the time of writing, the open-source extraction is very much a work in progress, so we could use a bit of help to get it off the ground.
+
+[Your Golf Travel]: http://palatinategroup.com/
+[ygt/microservice-logging]: https://github.com/ygt/microservice-logging
 
 ## In closing
 
