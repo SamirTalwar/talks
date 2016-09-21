@@ -27,7 +27,7 @@ Here's how it works.
   * If you take another player down, they don't revive in the same round.
   * Players *can* bring their teammates back up, but it's time-consuming.
   * If all the players on the team are taken down, that team loses.
-  * The first team to win five rounds wins.
+  * Best out of three rounds wins the match.
 
 ## About the infrastructure
 
