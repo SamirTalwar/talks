@@ -87,7 +87,9 @@ Yup, it logs. A lot. We can consider those log lines to be events.
 
 So, we're logging. All we need to do now is to push those events to a log collector such as [Fluentd][] or [Logstash][], and have it push them somewhere that can push them outwards again.
 
-A log-powered event bus. Sounds crazy. Let's do it.
+A log-powered event bus. It'll never work.
+
+Let's do it.
 
 [Fluentd]: http://www.fluentd.org/
 [Logstash]: https://www.elastic.co/products/logstash
