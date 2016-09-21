@@ -41,7 +41,11 @@ As you can see, we have one application with five components. Unfortunately, it 
 
 We initially looked into re-working the application to be completely multi-threaded. That made a bit of sense, but there's an issue with threading: it's still on one machine. You can only get so far with this until you need to scale out anyway.
 
-Next up: scale out the monolith. Sure, it works fairly well, but the problem is that you just need a lot more CPU time dedicated to gameplay; scoring and managing players is pretty lightweight, and matchmaking is intense but only for very short bursts. In addition, we still needed to federate the data across servers, because otherwise players are stuck on one single server.
+Next up: scale out the monolith.
+
+![Distributed monolith](assets/images/staying-lean-with-application-logs/monolith-distributed.png)
+
+Sure, it works fairly well, but the problem is that you just need a lot more CPU time dedicated to gameplay; scoring and managing players is pretty lightweight, and matchmaking is intense but only for very short bursts. In addition, we still needed to federate the data across servers, because otherwise players are stuck on one single server.
 
 So we rewrote it to use services. That went as well as you might expect.
 

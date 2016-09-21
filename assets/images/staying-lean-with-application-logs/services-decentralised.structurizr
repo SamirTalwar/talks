@@ -4,9 +4,9 @@ Container = Services - Decentralised | Matchmaker | Grabs players, starts and en
 Container = Services - Decentralised | Gameplay | Runs the game. | | | 447,166
 Container = Services - Decentralised | Scoring | Determines the score and who won. | | | 447,1161
 
-Relationship = Gameplay | Uses | | Matchmaker | |
-Relationship = Gameplay | Uses | | Scoring | |
-Relationship = Matchmaker | Uses | | Players | |
+Relationship = Gameplay | | | Matchmaker | |
+Relationship = Gameplay | | | Scoring | |
+Relationship = Matchmaker | | | Players | |
 
 Diagram = Container | Services - Decentralised | | A5_Landscape
 

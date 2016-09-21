@@ -1,0 +1,22 @@
+SoftwareSystem = Monolith - Distributed | | |
+Container = Monolith - Distributed | The Game | Ships on a Blu-Ray. | Xbox Two | | 1037,96
+Container = Monolith - Distributed | Load Balancer | Very important. | | | 1037,474
+Container = Monolith - Distributed | Server One | Here's number one. | | | 370,850
+Container = Monolith - Distributed | Server Two | Prefers to be called "Server A". | | | 1035,850
+Container = Monolith - Distributed | Server Three | And one for luck. | | | 1703,850
+Container = Monolith - Distributed | Database | Stores interesting data. | PostgreSQL | Database | 1037,1231
+
+Relationship = The Game | | | Load Balancer | |
+Relationship = Load Balancer | | | Server One | |
+Relationship = Load Balancer | | | Server Two | |
+Relationship = Load Balancer | | | Server Three | |
+Relationship = Server One | | | Database | |
+Relationship = Server Two | | | Database | |
+Relationship = Server Three | | | Database | |
+
+Diagram = Container | Monolith - Distributed | | A5_Landscape
+
+ElementStyle = Element   |  400 |  300 |         | #ffffff |  36 |
+ElementStyle = Container |      |      | #438dd5 |         |     |
+
+RelationshipStyle = Relationship |  5 |         |       | Direct     |  32 |  400 |

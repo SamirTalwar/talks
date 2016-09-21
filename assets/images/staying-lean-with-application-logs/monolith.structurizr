@@ -8,17 +8,17 @@ Component = Server | Gameplay | Runs the game. | | | 711,900
 Component = Server | Scoring | Determines the score and who won. | | | 69,900
 Container = Monolith | Database | Stores interesting data. | PostgreSQL | Database | 1030,1319
 
-Relationship = The Game | Uses | | Bridge | |
-Relationship = Bridge | Uses | | Players | |
-Relationship = Bridge | Uses | | Matchmaker | |
-Relationship = Bridge | Uses | | Gameplay | |
-Relationship = Bridge | Uses | | Scoring | |
-Relationship = Gameplay | Uses | | Matchmaker | |
-Relationship = Gameplay | Uses | | Scoring | |
-Relationship = Matchmaker | Uses | | Players | |
-Relationship = Matchmaker | Uses | | Database | |
-Relationship = Players | Uses | | Database | |
-Relationship = Scoring | Uses | | Database | |
+Relationship = The Game | | | Bridge | |
+Relationship = Bridge | | | Players | |
+Relationship = Bridge | | | Matchmaker | |
+Relationship = Bridge | | | Gameplay | |
+Relationship = Bridge | | | Scoring | |
+Relationship = Gameplay | | | Matchmaker | |
+Relationship = Gameplay | | | Scoring | |
+Relationship = Matchmaker | | | Players | |
+Relationship = Matchmaker | | | Database | |
+Relationship = Players | | | Database | |
+Relationship = Scoring | | | Database | |
 
 Diagram = Component | Server | | A5_Landscape
 
