@@ -18,7 +18,7 @@ redirect_from: /
 We're building a game for Xbox Two: <strong title="Which is definitely not related to &quot;Destiny&quot;.">Fate</strong>. One of the game modes is called the… um… <strong>Trials of Anubis</strong>.
 
 <figure>
-  <img alt="Fate cover art" src="assets/images/staying-lean-with-application-logs/cover-art.png"/>
+  <img alt="Fate cover art" src="assets/images/staying-lean-with-application-logs/cover-art.jpg"/>
   <figcaption>Copyright me, 2016</figcaption>
 </figure>
 
