@@ -2,6 +2,8 @@
 layout: default
 title: Staying Lean with Application Logs
 date: 2016-09-22 11:10:00 +0200
+presentation:
+  link: http://www.slideshare.net/SamirTalwar/staying-lean-with-application-logs
 
 code:
   language: javascript
