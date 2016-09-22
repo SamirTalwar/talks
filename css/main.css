@@ -35,7 +35,7 @@ nav > ul > li {
     display: inline-block;
 }
 
-nav > ul > li:nth-child(n + 2):before {
+nav > ul > li:not(:first-child):before {
     content: ' | ';
 }
 

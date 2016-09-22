@@ -5,6 +5,8 @@ date: 2016-09-22 11:10:00 +0200
 
 code:
   language: javascript
+
+redirect_from: /
 ---
 
 *With [@sleepyfox][].*

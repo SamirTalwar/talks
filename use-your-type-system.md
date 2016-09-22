@@ -7,8 +7,6 @@ presentation:
 
 code:
   language: java
-
-redirect_from: /
 ---
 
 So I've got this website.
