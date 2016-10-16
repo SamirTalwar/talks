@@ -1,2 +1,6 @@
+# Bundler
+.bundle/ruby
+
+# Jekyll
 .jekyll-metadata
 _site
