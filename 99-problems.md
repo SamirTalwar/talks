@@ -474,3 +474,7 @@ Promises make code a whole lot easier to reason about, but personally, I've been
 [Understanding JavaScript’s async await]: https://ponyfoo.com/articles/understanding-javascript-async-await
 [Babel]: https://babeljs.io/
 [Babel Polyfill]: https://babeljs.io/docs/usage/polyfill/
+
+## In closing
+
+That was a whirlwind tour of a lot of the asynchronous JavaScript ecosystem, and you have plenty of links to click to learn more. Have fun, explore, and if you remember anything at all, remember this: keep your functions short, make third parties do all the work, and don't forget to handle your errors!
