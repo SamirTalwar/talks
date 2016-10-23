@@ -46,7 +46,7 @@ In a concurrent system, it's pretty typical to use an **event loop**.
 They look like this:
 
     while (let event = eventQueue.next()) {
-      process(event);
+      process(event)
     }
 
 Often, these systems are concurrent, but *not* parallel. This means that both the `next` method and the `process` function are *blocking*. This means that if there's nothing on the queue yet, `next` will wait until one shows up before returning. Similarly, `process` won't return until processing has finished.
@@ -61,33 +61,33 @@ XMLHttpRequest is a JavaScript class (of sorts) that triggers an HTTP request an
 
 You can still do this today:
 
-    var request = new XMLHttpRequest();
+    var request = new XMLHttpRequest()
     request.open('GET', 'something.json', false); // the "false" tells it to make a synchronous request
-    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
     request.send(null); // No data needs to be sent along with the request
     // execution pauses here until we get a response
-    alert('Response:\n' + this.responseText);
+    alert('Response:\n' + this.responseText)
 
 Blocking the browser from responding to input isn't very friendly, so it was quickly transformed to an asynchronous style. Asynchronous requests look something like this ([taken from Wikipedia][Wikipedia / XMLHttpRequest] and modified):
 
-    var request = new XMLHttpRequest();
+    var request = new XMLHttpRequest()
     request.onreadystatechange = function () {
       if (this.readyState === 4) {
-        alert('Response:\n' + this.responseText);
+        alert('Response:\n' + this.responseText)
       }
-    };
+    }
     request.open('GET', 'something.json', true); // the third parameter is the "async" flag
-    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
     request.send(null); // No data needs to be sent along with the request
 
 Pleasant. The important thing is the function declared on lines 2–7:
 
     request.onreadystatechange = function () {
-      var DONE = this.DONE || 4;
+      var DONE = this.DONE || 4
       if (this.readyState === DONE) {
-        alert(this.readyState);
+        alert('Response:\n' + this.responseText)
       }
-    };
+    }
 
 This function is executed whenever the *state* of the response changes. I can't remember what the various states were, but I do remember that when the `readyState` hit `4`, the response was complete, and could be determined to be successful or a failure.
 
