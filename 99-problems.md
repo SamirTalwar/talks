@@ -257,3 +257,100 @@ If you want to explore this further, I'd also recommend looking into the [*co*][
 
 [Iterators and Generators]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators
 [co]: https://github.com/tj/co
+
+## Part 2: from callbacks to promises
+
+Let's look at some clever code to find out where we are.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="YGdmJk" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/YGdmJk/">Where in the world am I?</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+Just like our first example, this code is synchronous. It still takes time to run, as it does three separate web requests in sequence, but the code is written from top to bottom. Like the `XMLHttpRequest` example above, it passes `false` as the third parameter to `.open` in order to tell it to block until it's completed.
+
+You'll notice that it blocks the UI too. Run it, then quickly try and select some text. You won't be able to until it's run to completion and the map has started loading. (We load the map by adding an `<img>` element to the page, which *always* loads the image asynchronously.)
+
+We can fix this by setting that flag to `true` instead, and registering an "onreadystatechange" handler on the request. This fires whenever there's something to report on the response.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="RGvAGR" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/RGvAGR/">Where in the world am I? Take 2</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+This example, like the previous one, puts the guts of the HTTP request mechanism into a tidy function called `get`. This time, though, it takes a callback:
+
+    function get(address, headers, onSuccess) {
+      ...
+    }
+
+On a successful response, `onSuccess` is called. With just a bit of rearranging, we have fully-asynchronous code. This code is similar to the sort of style you see in a lot of more complicated client-side code, and is also how many node.js IO-bound functions (such as reading files, talking to the database, making HTTP calls from the server, etc.) work out of the box.
+
+This doesn't come without a price though. The code is much less readable than it was before. Each operation adds another level of nesting which quickly adds up, leading to one massive Hadouken:
+
+![Indent Hadouken](https://i.imgur.com/BtjZedW.jpg)
+
+I wish I knew who made that image so I could give them a big hug and tell them everything is going to be alright.
+
+Our code is getting there. Just look at the end of the `start` function:
+
+          })
+        })
+      })
+    })
+
+It's getting pretty indent-y. But wait, it gets worse!
+
+<p data-height="600" data-theme-id="0" data-slug-hash="JRxGbP" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/JRxGbP/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+There is, of course, a non-zero chance that a web request can fail. We need to report errors on failure. So really, our `get` function needs two callbacks, not one:
+
+    function get(address, headers, onSuccess, onFailure) {
+
+And the end of our `start` function starts to look like this:
+
+          })
+        }, error => {
+          progress.textContent = error.message
+        })
+      }, error => {
+        progress.textContent = error.message
+      })
+    })
+
+Yuck, what a mess. Examining the code, you might start to think about extracting each callback function and composing them together. This can work, but the code becomes very hard to follow:
+
+<p data-height="600" data-theme-id="0" data-slug-hash="gwqGjQ" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/gwqGjQ/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+The contents of the `start` function become this:
+
+    fetchIp(fetchLocation(renderMap(onLoaded), reportError), reportError)
+
+Which looks clean, aside from the `reportError` duplication, but it's deceptive. Look at the first few lines of `renderMap` to understand why:
+
+    const renderMap = onSuccess => ipInfoString => {
+      const ipInfo = JSON.parse(ipInfoString)
+      const [latitude, longitude] = ipInfo.loc.split(',')
+
+Counter to its name, the first thing `renderMap` does is parse the result of fetching the location. This is because the callbacks are structured as such out of necessity. We could solve this by splitting the callbacks, but then we'd have a dozen small functions, which would be as impenetrable as one big one.
+
+Fortunately, there's an answer. [`Promise`][Promise] was added to JavaScript in 2015 as an abstraction over a chain of asynchronous operations.
+
+A *Promise* is an object that is in one of three states: *pending*, *resolved* or *rejected*. A resolved promise represents a successful asynchronous computation, a rejected one represents failure, and a pending one represents a computation that hasn't finished yet.
+
+Key to the idea of promises are that they're *chainable*. This means that you can tell a promise to do something as soon as it resolves (or rejects), and it will, by adding that *something* to the event loop queue. We do this with the `.then` method:
+
+    fetchIp()
+      .then(fetchLocation)
+      .then(renderMap)
+      .then(onLoaded)
+
+And it works. Take a look:
+
+<p data-height="600" data-theme-id="0" data-slug-hash="QKYyvA" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/QKYyvA/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+The above example hasn't had any functions extracted out, so you can follow it easily. `get` now returns a `Promise` instead of calling callbacks (take a look at the implementation at the bottom if you're interested), and each operation is chained with `.then`.
+
+Now we really can clean up:
+
+<p data-height="600" data-theme-id="0" data-slug-hash="jrdGJP" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/jrdGJP/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+Callbacks work, to an extent, but adding a layer of abstraction on top of success and failure can really enhance readability and maintainability. In addition, it's way easier to remember to `catch` once… though even that isn't really enough. There are libraries such as Folktale's [`Data.Task`][Folktale Data.Task] and my own [Safe Promises][] library which *force* you to provide an error handler, but it's hard for either of them to compete with the standard library.
+
+[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[Folktale Data.Task]: https://github.com/folktale/data.task
+[Safe Promises]: https://www.npmjs.com/package/safe-promises
