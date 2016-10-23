@@ -354,3 +354,123 @@ Callbacks work, to an extent, but adding a layer of abstraction on top of succes
 [Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 [Folktale Data.Task]: https://github.com/folktale/data.task
 [Safe Promises]: https://www.npmjs.com/package/safe-promises
+
+## Part 3: taking it to the limit
+
+So far, everything we've done was concurrent but sequential. What if we really want to run behaviour in parallel?
+
+Well, as we've discussed, JavaScript won't (easily) allow you to run parallel code ([Web Workers][] excluded). However, it *will* allow you to run several of your own functions concurrently. Asynchronous code in JavaScript isn't just about making sure the UI is always responsive, but also about doing several things at once.
+
+Here's a variant on the previous example that finds the ten nearest coffee shops using Foursquare. In this example, we're back to callbacks.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="mAvOXj" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/mAvOXj/">Where in the world is my coffee? Take 2</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+I cheated a bit and pretended you can't get all that information in one API call to Foursquare so that I had an excuse to make lots of requests in parallel. Of course, the API fully supports getting information on lots of venues at once, but we're going to ignore that for now.
+
+Take a look at the code that fetches all the venue information in parallel:
+
+            const venues = []
+            venueIds.forEach(venueId => {
+              get(/* url */, {}, venueResponse => {
+                venues.push(JSON.parse(venueResponse).response.venue)
+
+                if (venues.length === venueIds.length) {
+                  ...
+
+Frankly, mutating an array and then checking whether we have enough yet sounds like trouble. Unfortunately, as the next example shows, just refactoring to promises doesn't help much.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="JRxbBA" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/JRxbBA/">Where in the world is my coffee? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+Here's the relevant code:
+
+          const venues = []
+          venueIds.forEach(venueId => {
+            get(/* url */)
+              .then(venueResponse => {
+                venues.push(JSON.parse(venueResponse).response.venue)
+              })
+              .then(() => {
+                if (venues.length !== venueIds.length) {
+                  return
+                }
+
+It's really just as bad. Fortunately, we have one advantage: the authors of the Promise spec recognised this and added a little tool called [`Promise.all`][Promise.all] that (effectively) handles building up the array for us. Unlike the code above, it even makes sure it gets built in the correct order.
+
+I'll leave it to you to figure out how it works, but for now, just take a look at how it helps our code:
+
+<p data-height="600" data-theme-id="0" data-slug-hash="ozmYmq" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/ozmYmq/">Where in the world is my coffee? Take 4</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+          return Promise.all(venueIds.map(venueId =>
+            get(/* url */)
+              .then(venueResponse => JSON.parse(venueResponse).response.venue)))
+        })
+        .then(venues => {
+
+`Promise.all` changes things. We had some very imperative code that took a while to parse, and we've turned it into incredibly functional code that just does a transformation on an array. The fact that the new array contains a load of promises is almost incidental—`Promise.all` takes it, waits for everything to resolve, and we end up with a *single* promise containing the array of venues.
+
+(By the by, the *async* library could have done this too with `async.map`; it's not quite as elegant but it's close.)
+
+[Web Workers]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+[Promise.all]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
+
+### And now, a little treat
+
+Take a look at the synchronous version of all of this.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="JRxbGb" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/JRxbGb/">Where in the world is my coffee?</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+We know it's not going to hold up, but isn't it much nicer than even the example using promises?
+
+What if there was a way we could do the same thing, but make it fully asynchronous?
+
+Good news. There is.
+
+<p data-height="600" data-theme-id="0" data-slug-hash="XjONQR" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/XjONQR/">Where in the world is my coffee? Take 5</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+
+In *ES7*, [async functions][Understanding JavaScript’s async await] make life much easier. Take a look at the implementation of the coffee-shop finder above.
+
+    async () => {
+      try {
+        ...
+        progress.textContent = 'Fetching my IP address…'
+        const ip = (await get('https://icanhazip.com/', {})).trim()
+        ...
+      } catch (error) {
+        progress.textContent = error.message
+      }
+    }
+
+All you need to do is add `async` to the start of your function implementation (either a lambda or a `function`), and away you go. From then on, you can use `await` to turn asynchronous calls into synchronous-looking ones. You can even use it inside complex expressions.
+
+How does it do this? Simple (at least to reason about): an `async` function *always* returns a promise. Everything inside it is implicitly wrapped in a Promise constructor (see the implementation of `get` if you want to know how to do this yourself). And when it hits an `await`, it rewrites the code so that the promise after the `await` is returned, and everything following is moved into a `.then` call afterwards. It even understands `try` and `for`.
+
+So, the above code is equivalent to this:
+
+    Promise.resolve()
+      .then(() => {
+        ...
+        progress.textContent = 'Fetching my IP address…'
+        return get('https://icanhazip.com/', {})
+      })
+      .then(result => {
+        const ip = (await result).trim()
+        ...
+      })
+      .catch(error => {
+        progress.textContent = error.message
+      })
+
+Because `await` is syntactic sugar on top of promises, it even works alongside other tools such as `Promise.all`:
+
+    const venues = await Promise.all(venueIds.map(async venueId => {
+      const venueResponse = JSON.parse(await get(`https://api.foursquare.com/v2/venues/${venueId}?client_id=${foursquareClientId}&client_secret=${foursquareClientSecret}&v=${today}`))
+      return venueResponse.response.venue
+    }))
+
+The word "rewriting" is actually closer than I'd like. `async` and `await` are very recent pieces of functionality, and no JavaScript runtime I'm aware of actually supports them. The reason the above code works is because it's being run through the [Babel][] compiler, and includes a [polyfill][Babel Polyfill] designed to retrofit all ES6 and some ES7 features, including promises themselves, onto ES5 (which pretty much all browsers and runtimes support).
+
+Promises make code a whole lot easier to reason about, but personally, I've been using `async` and `await` in my own code for the last couple of months, and I'd have a hard time going back. Sometimes a little bit of syntactic sugar makes a world of difference.
+
+[Understanding JavaScript’s async await]: https://ponyfoo.com/articles/understanding-javascript-async-await
+[Babel]: https://babeljs.io/
+[Babel Polyfill]: https://babeljs.io/docs/usage/polyfill/
