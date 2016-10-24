@@ -367,6 +367,8 @@ Here's a variant on the previous example that finds the ten nearest coffee shops
 
 I cheated a bit and pretended you can't get all that information in one API call to Foursquare so that I had an excuse to make lots of requests in parallel. Of course, the API fully supports getting information on lots of venues at once, but we're going to ignore that for now.
 
+(In order to run the code above, you'll need to provide a Foursquare app client ID and secret. You can [create a new app][Foursquare / Create New App] and get some in about 30 seconds.)
+
 Take a look at the code that fetches all the venue information in parallel:
 
             const venues = []
@@ -410,6 +412,7 @@ I'll leave it to you to figure out how it works, but for now, just take a look a
 
 (By the by, the *async* library could have done this too with `async.map`; it's not quite as elegant but it's close.)
 
+[Foursquare / Create New App]: https://foursquare.com/developers/register
 [Web Workers]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
 [Promise.all]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
 
