@@ -314,7 +314,7 @@ And the end of our `start` function starts to look like this:
 
 Yuck, what a mess. Examining the code, you might start to think about extracting each callback function and composing them together. This can work, but the code becomes very hard to follow:
 
-<p data-height="600" data-theme-id="0" data-slug-hash="gwqGjQ" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/gwqGjQ/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<p data-height="600" data-theme-id="0" data-slug-hash="gwqGjQ" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/gwqGjQ/">Where in the world am I? Take 4</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
 
 The contents of the `start` function become this:
 
@@ -341,13 +341,13 @@ Key to the idea of promises are that they're *chainable*. This means that you ca
 
 And it works. Take a look:
 
-<p data-height="600" data-theme-id="0" data-slug-hash="QKYyvA" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/QKYyvA/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<p data-height="600" data-theme-id="0" data-slug-hash="QKYyvA" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/QKYyvA/">Where in the world am I? Take 5</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
 
 The above example hasn't had any functions extracted out, so you can follow it easily. `get` now returns a `Promise` instead of calling callbacks (take a look at the implementation at the bottom if you're interested), and each operation is chained with `.then`.
 
 Now we really can clean up:
 
-<p data-height="600" data-theme-id="0" data-slug-hash="jrdGJP" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/jrdGJP/">Where in the world am I? Take 3</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<p data-height="600" data-theme-id="0" data-slug-hash="jrdGJP" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/jrdGJP/">Where in the world am I? Take 6</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
 
 Callbacks work, to an extent, but adding a layer of abstraction on top of success and failure can really enhance readability and maintainability. In addition, it's way easier to remember to `catch` once… though even that isn't really enough. There are libraries such as Folktale's [`Data.Task`][Folktale Data.Task] and my own [Safe Promises][] library which *force* you to provide an error handler, but it's hard for either of them to compete with the standard library.
 
