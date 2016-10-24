@@ -7,8 +7,6 @@ presentation:
 
 code:
   language: javascript
-
-redirect_from: /
 ---
 
 *With [@sleepyfox][].*

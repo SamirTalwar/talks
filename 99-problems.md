@@ -5,6 +5,8 @@ date: 2016-10-24 16:30:00 +0200
 
 code:
   language: javascript
+
+redirect_from: /
 ---
 
 <script src="https://assets.codepen.io/assets/embed/ei.js" async defer></script>
