@@ -64,9 +64,9 @@ XMLHttpRequest is a JavaScript class (of sorts) that triggers an HTTP request an
 You can still do this today:
 
     var request = new XMLHttpRequest()
-    request.open('GET', 'something.json', false); // the "false" tells it to make a synchronous request
+    request.open('GET', 'something.json', false) // the "false" tells it to make a synchronous request
     request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-    request.send(null); // No data needs to be sent along with the request
+    request.send(null) // No data needs to be sent along with the request
     // execution pauses here until we get a response
     alert('Response:\n' + this.responseText)
 
@@ -78,9 +78,9 @@ Blocking the browser from responding to input isn't very friendly, so it was qui
         alert('Response:\n' + this.responseText)
       }
     }
-    request.open('GET', 'something.json', true); // the third parameter is the "async" flag
+    request.open('GET', 'something.json', true) // the third parameter is the "async" flag
     request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-    request.send(null); // No data needs to be sent along with the request
+    request.send(null) // No data needs to be sent along with the request
 
 Pleasant. The important thing is the function declared on lines 2–7:
 
