@@ -400,7 +400,7 @@ Here's the relevant code:
 
 It's really just as bad. Fortunately, we have one advantage: the authors of the Promise spec recognised this and added a little tool called [`Promise.all`][Promise.all] that (effectively) handles building up the array for us. Unlike the code above, it even makes sure it gets built in the correct order.
 
-I'll leave it to you to figure out how it works, but for now, just take a look at how it helps our code:
+You can [implement `Promise.all` (and other functions on arrays of promises) yourself][Promise array functions], but for now, just take a look at how it helps our code:
 
 <p data-height="600" data-theme-id="0" data-slug-hash="ozmYmq" data-default-tab="js,result" data-user="SamirTalwar" data-embed-version="2" class="codepen">See the Pen <a href="https://codepen.io/SamirTalwar/pen/ozmYmq/">Where in the world is my coffee? Take 4</a> by Samir Talwar (<a href="http://codepen.io/SamirTalwar">@SamirTalwar</a>) on <a href="http://codepen.io">CodePen</a>.</p>
 
@@ -417,6 +417,7 @@ I'll leave it to you to figure out how it works, but for now, just take a look a
 [Foursquare / Create New App]: https://foursquare.com/developers/register
 [Web Workers]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
 [Promise.all]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
+[Promise array functions]: https://gist.github.com/SamirTalwar/cdea07f38182887421ffc2e4fc5937fe
 
 ### And now, a little treat
 
